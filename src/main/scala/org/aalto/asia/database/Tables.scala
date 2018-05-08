@@ -31,7 +31,18 @@ case class AuthEntry(
   val roleID: Long,
   val request: RequestFlag, //Bit flag
   val allow: Boolean,
-  val path: Path)
+  val path: Path,
+  val expire: Timestamp)
+
+case class RoleEntry(
+  val roleID: Option[Long],
+  val name: String,
+  val expire: Timestamp)
+
+case class MemberEntry(
+  val roleID: Long,
+  val memberID: Long,
+  val expire: Timestamp)
 
 trait DBBase {
   val dc: DatabaseConfig[JdbcProfile] //= DatabaseConfig.forConfig[JdbcProfile](database.dbConfigName)
@@ -57,13 +68,46 @@ trait Tables extends DBBase {
     { p: RequestFlag => p.toVector.headOption.getOrElse(0) },
     { i: Int => new RequestFlag(i) } // String to Path
   )
+  class RolesTable(tag: Tag) extends Table[RoleEntry](tag, "ROLES") {
+    def roleid: Rep[Long] = column[Long]("ROLEID", O.PrimaryKey, O.AutoInc)
+    def name: Rep[String] = column[String]("NAME")
+    def expire: Rep[Timestamp] = column[Timestamp]("EXPIRE")
+    def nameIndex = index("NAMEINDEX", name, unique = true)
+    def * = (roleid?, name, expire) <> (RoleEntry.tupled, RoleEntry.unapply)
+  }
+  class Roles extends TableQuery[RolesTable](new RolesTable(_))
+  val roles = new Roles()
+  class MembersTable(tag: Tag) extends Table[MemberEntry](tag, "MEMBERS") {
+    def roleid: Rep[Long] = column[Long]("ROLEID")
+    def memberid: Rep[Long] = column[Long]("MEMBERID")
+    def expire: Rep[Timestamp] = column[Timestamp]("EXPIRE")
+    def roleIndex = index("ROLEINDEX", roleid, unique = false)
+    def memberIndex = index("MEMBERINDEX", memberid, unique = false)
+    def rolesFK = foreignKey("ROLE_FK", roleid, roles)(_.roleid, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def membersFK = foreignKey("MEMBER_FK", memberid, roles)(_.roleid, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def * = (roleid, memberid, expire) <> (MemberEntry.tupled, MemberEntry.unapply)
+  }
+  class Members extends TableQuery[MembersTable](new MembersTable(_)) {
+    def rolesOf(roleId: Long): DBSIOro[Long] = rolesOfQ(roleId).result
+    protected def rolesOfQ(roleId: Long) = this.filter(row => row.memberid === roleId).map(_.roleid)
+  }
+  val members = new Members()
   class AuthorizationTable(tag: Tag) extends Table[AuthEntry](tag, "AUTHENTRIES") {
     def roleid: Rep[Long] = column[Long]("ROLEID")
     def request: Rep[RequestFlag] = column[RequestFlag]("REQUEST")
     def path: Rep[Path] = column[Path]("PATH")
     def allow: Rep[Boolean] = column[Boolean]("ALLOW_OR_DENY")
+    def expire: Rep[Timestamp] = column[Timestamp]("EXPIRE")
     def roleIndex = index("ROLEINDEX", roleid, unique = false)
     def roleRequestIndex = index("ROLEREQUESTINDEX", (roleid, request), unique = false)
-    def * = (roleid, request, allow, path) <> (AuthEntry.tupled, AuthEntry.unapply)
+    def rolesFK = foreignKey("ROLE_FK", roleid, roles)(_.roleid, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def * = (roleid, request, allow, path, expire) <> (AuthEntry.tupled, AuthEntry.unapply)
   }
+  class Authorizations extends TableQuery[AuthorizationTable](new AuthorizationTable(_)) {
+    def selectByRole(roleId: Long): DBSIOro[AuthEntry] = selectByRoleQ(roleId).result
+    protected def selectByRoleQ(roleId: Long) = this.filter { row => row.roleid === roleId }
+    def selectByRoles(roleIds: Seq[Long]): DBSIOro[AuthEntry] = selectByRolesQ(roleIds).result
+    protected def selectByRolesQ(roleIds: Seq[Long]) = this.filter { row => row.roleid inSet roleIds.toSet }
+  }
+  val authRules = new Authorizations()
 }
