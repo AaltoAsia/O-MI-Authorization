@@ -18,6 +18,7 @@ import org.aalto.asia.UserRegistryActor._
 import akka.pattern.ask
 import akka.util.Timeout
 
+
 //#user-routes-class
 trait UserRoutes extends JsonSupport {
   //#user-routes-class
@@ -32,6 +33,7 @@ trait UserRoutes extends JsonSupport {
 
   // Required by the `ask` (?) method below
   implicit lazy val timeout = Timeout(5.seconds) // usually we'd obtain the timeout from the system's configuration
+
 
   //#all-routes
   //#users-get-post
