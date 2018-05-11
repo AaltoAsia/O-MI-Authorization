@@ -8,7 +8,6 @@ final case class User(name: String, age: Int, countryOfResidence: String)
 final case class Users(users: Seq[User])
 //#user-case-classes
 
-
 object UserRegistryActor {
   final case class ActionPerformed(description: String)
   final case object GetUsers
@@ -19,12 +18,10 @@ object UserRegistryActor {
   def props: Props = Props[UserRegistryActor]
 }
 
-
 class UserRegistryActor extends Actor with ActorLogging {
   import UserRegistryActor._
 
   var users = Set.empty[User]
-
 
   def receive: Receive = {
     case GetUsers =>
