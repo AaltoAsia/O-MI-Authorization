@@ -38,6 +38,7 @@ case class ReadWrite() extends Request {
 }
 
 case class PermissionResult(
+  user: String,
   allowed: Seq[Path],
   denied: Seq[Path])
 
@@ -179,6 +180,7 @@ trait Tables extends DBBase {
       ars: Seq[AuthEntry] =>
         val (deniedAR, allowedAR) = ars.partition(_.allow)
         PermissionResult(
+          user_name,
           allowedAR.map(_.path),
           deniedAR.map(_.path))
     })
