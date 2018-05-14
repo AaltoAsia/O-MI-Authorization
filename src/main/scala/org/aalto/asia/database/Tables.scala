@@ -77,7 +77,7 @@ trait DBBase {
   //protected[this] val db: Database
 }
 
-trait Tables extends DBBase {
+trait AuthorizationTables extends DBBase {
   import dc.driver.api._
   import dc.driver.api.DBIOAction
 
@@ -174,70 +174,5 @@ trait Tables extends DBBase {
           rule.request === (request.mask | 2))
     }
     rulesForRequest
-  }
-  def userRulesForRequest(user_name: String, request: Request): Future[PermissionResult] = {
-    db.run(queryUserRulesForRequest(user_name, request).result.map {
-      ars: Seq[AuthEntry] =>
-        val (deniedAR, allowedAR) = ars.partition(_.allow)
-        PermissionResult(
-          user_name,
-          allowedAR.map(_.path),
-          deniedAR.map(_.path))
-    })
-  }
-  def newRole(role_name: String, expireO: Option[Timestamp]): Future[Int] = {
-    val expire: Timestamp = expireO.getOrElse(new Timestamp(Long.MaxValue))
-    val action = { roles += RoleEntry(None, role_name, expire) }
-    db.run(action)
-  }
-  def addToGroups(name: String, groups: Seq[String], expireO: Option[Timestamp]) = {
-    val expire: Timestamp = expireO.getOrElse(new Timestamp(Long.MaxValue))
-    val user_id = roles.filter { role => role.name === name }.result
-    val groups_id = roles.filter { role => role.name.inSet(groups.toSet) }.result
-    user_id.flatMap {
-      role: Seq[RoleEntry] =>
-        role.headOption match {
-          case Some(RoleEntry(Some(id), _, _)) =>
-            groups_id.flatMap {
-              groupEntries: Seq[RoleEntry] =>
-                if (groupEntries.size == groups.size) {
-                  val entries = groupEntries.map {
-                    gEntry => MemberEntry(gEntry.roleID.get, id, expire)
-                  }
-                  members ++= entries
-                } else {
-                  val notFound = groups.filterNot {
-                    g_name: String => groupEntries.exists(_.name == g_name)
-                  }
-                  slick.dbio.DBIOAction.failed(new Exception(s"Unknown groups: ${notFound.mkString(", ")}"))
-                }
-            }
-          case None =>
-            slick.dbio.DBIOAction.failed(new Exception(s"Unknown role named $name"))
-        }
-    }
-
-  }
-  def newRules(role_name: String, request: Request, allowOrDeny: Boolean, paths: Seq[Path], expireO: Option[Timestamp]): Future[Option[Int]] = {
-    val expire: Timestamp = expireO.getOrElse(new Timestamp(Long.MaxValue))
-    val action = roles.filter { role => role.name === role_name }.map(_.roleid).result.flatMap {
-      ids: Seq[Long] =>
-        ids.headOption match {
-          case Some(id) =>
-            val entries = paths.map {
-              path =>
-                AuthEntry(
-                  Some(id),
-                  request.mask,
-                  allowOrDeny,
-                  path,
-                  expire)
-            }
-            authRules ++= entries
-          case None =>
-            slick.dbio.DBIOAction.failed(new Exception(s"Unknown role named $role_name"))
-        }
-    }
-    db.run(action)
   }
 }

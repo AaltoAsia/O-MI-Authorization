@@ -10,21 +10,14 @@ import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 
 //#main-class
-object QuickstartServer extends App with UserRoutes {
+object QuickstartServer extends App with AuthRoutes {
 
   // set up ActorSystem and other dependencies here
   //#main-class
   //#server-bootstrapping
-  implicit val system: ActorSystem = ActorSystem("helloAkkaHttpServer")
+  implicit val system: ActorSystem = ActorSystem("O-MI-Authorization-Server")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   //#server-bootstrapping
-
-  val userRegistryActor: ActorRef = system.actorOf(UserRegistryActor.props, "userRegistryActor")
-
-  //#main-class
-  // from the UserRoutes trait
-  lazy val routes: Route = userRoutes
-  //#main-class
 
   //#http-server
   Http().bindAndHandle(routes, "localhost", 8080)
