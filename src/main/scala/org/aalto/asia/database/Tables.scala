@@ -15,12 +15,18 @@ import scala.language.postfixOps
 import org.slf4j.LoggerFactory
 //import slick.driver.H2Driver.api._
 import slick.jdbc.meta.MTable
+import org.aalto.asia.RequestType
 
 import slick.backend.DatabaseConfig
 //import slick.driver.H2Driver.api._
 import slick.driver.JdbcProfile
 import slick.lifted.{ Index, ForeignKeyQuery, ProvenShape }
 import types.Path
+
+case class PermissionResult(
+  roles: Set[String],
+  allowed: Seq[Path],
+  denied: Seq[Path])
 
 sealed trait Request {
   def mask: Int
@@ -33,24 +39,69 @@ case class Read() extends Request {
 case class Write() extends Request {
   val mask: Int = 2
 }
+case class Call() extends Request {
+  val mask: Int = 4
+}
+case class Delete() extends Request {
+  val mask: Int = 8
+}
 case class ReadWrite() extends Request {
   val mask: Int = 2 | 1
 }
+case class ReadCall() extends Request {
+  val mask: Int = 4 | 1
+}
+case class ReadDelete() extends Request {
+  val mask: Int = 8 | 1
+}
+case class WriteDelete() extends Request {
+  val mask: Int = 8 | 2
+}
+case class WriteCall() extends Request {
+  val mask: Int = 4 | 2
+}
+case class CallDelete() extends Request {
+  val mask: Int = 8 | 4
+}
+case class ReadWriteCall() extends Request {
+  val mask: Int = 2 | 1 | 4
+}
+case class ReadWriteDelete() extends Request {
+  val mask: Int = 2 | 1 | 8
+}
+case class ReadCallDelete() extends Request {
+  val mask: Int = 4 | 1 | 8
+}
+case class WriteCallDelete() extends Request {
+  val mask: Int = 2 | 4 | 8
+}
+case class ReadWriteCallDelete() extends Request {
+  val mask: Int = 2 | 1 | 4 | 8
+}
 
-case class PermissionResult(
-  user: String,
-  allowed: Seq[Path],
-  denied: Seq[Path])
-
+import RequestType._
 object Request {
+  def apply(requestType: RequestType): Request = {
+    requestType match {
+      case RequestType.Read => Read()
+      case RequestType.Write => Write()
+      case RequestType.Call => Call()
+      case RequestType.Delete => Delete()
+    }
+  }
   def apply(mask: Int): Request = {
     mask match {
       case 1 => Read()
       case 2 => Write()
       case 3 => ReadWrite()
+      case 4 => Call()
+      case 5 => ReadCall()
+      case 8 => Delete()
+      case 9 => ReadDelete()
     }
   }
 }
+
 import Request._
 
 case class AuthEntry(
@@ -111,26 +162,6 @@ trait AuthorizationTables extends DBBase {
   class Roles extends TableQuery[RolesTable](new RolesTable(_))
   val roles = new Roles()
 
-  class MembersTable(tag: Tag) extends Table[MemberEntry](tag, "MEMBERS") {
-    def roleid: Rep[Long] = column[Long]("ROLEID")
-    def memberid: Rep[Long] = column[Long]("MEMBERID")
-    def expire: Rep[Timestamp] = column[Timestamp]("EXPIRE")
-
-    def roleIndex = index("ROLEINDEX", roleid, unique = false)
-    def memberIndex = index("MEMBERINDEX", memberid, unique = false)
-
-    def rolesFK = foreignKey("ROLE_FK", roleid, roles)(_.roleid, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-    def membersFK = foreignKey("MEMBER_FK", memberid, roles)(_.roleid, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-
-    def * = (roleid, memberid, expire) <> (MemberEntry.tupled, MemberEntry.unapply)
-  }
-
-  class Members extends TableQuery[MembersTable](new MembersTable(_)) {
-    def rolesOf(roleId: Long): DBSIOro[Long] = rolesOfQ(roleId).result
-    protected def rolesOfQ(roleId: Long) = this.filter(row => row.memberid === roleId).map(_.roleid)
-  }
-  val members = new Members()
-
   class AuthorizationTable(tag: Tag) extends Table[AuthEntry](tag, "AUTHENTRIES") {
     def roleid: Rep[Long] = column[Long]("ROLEID")
     def request: Rep[Int] = column[Int]("REQUEST")
@@ -158,14 +189,11 @@ trait AuthorizationTables extends DBBase {
   val authRules = new Authorizations()
 
   def currentTimestamp: Timestamp = new Timestamp(new Date().getTime())
-  protected def queryUserRulesForRequest(user_name: String, request: Request) = {
-    val rolesOfUser = for {
-      (role, member) <- (roles.filter { row => row.name === user_name } join members.filter(_.expire >= currentTimestamp) on { (role, member) => member.memberid === role.roleid })
-    } yield (member.roleid)
+  protected def queryUserRulesForRequest(role_names: Set[String], request: Request) = {
+    val roleIds = roles.filter { row => row.name inSet role_names } map (_.roleid)
     val rulesForRoles = for {
-      (id, rule) <- rolesOfUser join authRules.filter(_.expire >= currentTimestamp) on { (id, rule) => id === rule.roleid }
+      (id, rule) <- roleIds join authRules.filter(_.expire >= currentTimestamp) on { (id, rule) => id === rule.roleid }
     } yield (rule)
-    //TODO: How to use masking correctly?
     val rulesForRequest = rulesForRoles.filter {
       rule =>
         rule.expire >= currentTimestamp && (

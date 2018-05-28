@@ -7,7 +7,7 @@ object Dependencies {
   lazy val akkaVersion    = "2.5.12"
   val akka_dependencies= Seq(
     "com.typesafe.akka" %% "akka-http"            % akkaHttpVersion,
-    "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
+    //"com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-xml"        % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-stream"          % akkaVersion,
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -29,11 +29,16 @@ object Dependencies {
   val slickV = "3.2.3"
   val h2           = "com.h2database"      % "h2"             % "1.4.192" //common
   val postgres     = "org.postgresql"      % "postgresql"      % "9.4.1211"
+
+    val json4s       = "org.json4s"         %% "json4s-native"   % "3.5.3" //common
+    val json4sAkka = "de.heikoseeberger" %% "akka-http-json4s" % "1.16.0" //common
   val slick_dependencies= Seq(
     "com.typesafe.slick" %% "slick" % slickV,
     "com.typesafe.slick" %% "slick-codegen"  % slickV,
     "com.typesafe.slick" %% "slick-hikaricp" % slickV,
     h2,
-    postgres
+    postgres,
+    json4s,
+    json4sAkka
   )
 }

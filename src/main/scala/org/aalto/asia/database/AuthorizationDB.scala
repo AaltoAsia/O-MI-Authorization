@@ -50,55 +50,25 @@ class AuthorizationDB(
   }
   initialise()
 
-  def userRulesForRequest(user_name: String, request: Request): Future[PermissionResult] = {
-    db.run(queryUserRulesForRequest(user_name, request).result.map {
+  def userRulesForRequest(role_names: Set[String], request: Request): Future[PermissionResult] = {
+    db.run(queryUserRulesForRequest(role_names, request).result.map {
       case ars: Seq[AuthEntry] if ars.isEmpty =>
         throw new Exception("No rules for role or unknown role")
       case ars: Seq[AuthEntry] =>
         val (deniedAR, allowedAR) = ars.partition(_.allow)
         PermissionResult(
-          user_name,
+          role_names,
           allowedAR.map(_.path),
           deniedAR.map(_.path))
     })
   }
-  def newRole(role_name: String, expireO: Option[Timestamp]): Future[Option[Int]] = {
+  def newRole(role_name: String, expireO: Option[Timestamp]): Future[Int] = {
     val expire: Timestamp = expireO.getOrElse(new Timestamp(Long.MaxValue))
     val action = { roles += RoleEntry(None, role_name, expire) }
     val r = db.run(action)
-    r.flatMap {
-      case id: Int => addToGroups(role_name, Vector("DEFAULT"), None)
-    }
+    r
   }
-  def addToGroups(name: String, groups: Seq[String], expireO: Option[Timestamp]): Future[Option[Int]] = {
-    val expire: Timestamp = expireO.getOrElse(new Timestamp(Long.MaxValue))
-    val user_id = roles.filter { role => role.name === name }.result
-    val groups_id = roles.filter { role => role.name.inSet(groups.toSet) }.result
-    val actions = user_id.flatMap {
-      role: Seq[RoleEntry] =>
-        role.headOption match {
-          case Some(RoleEntry(Some(id), _, _)) =>
-            groups_id.flatMap {
-              groupEntries: Seq[RoleEntry] =>
-                if (groupEntries.size == groups.size) {
-                  val entries = groupEntries.map {
-                    gEntry => MemberEntry(gEntry.roleID.get, id, expire)
-                  }
-                  members ++= entries
-                } else {
-                  val notFound = groups.filterNot {
-                    g_name: String => groupEntries.exists(_.name == g_name)
-                  }
-                  slick.dbio.DBIOAction.failed(new Exception(s"Unknown groups: ${notFound.mkString(", ")}"))
-                }
-            }
-          case None =>
-            slick.dbio.DBIOAction.failed(new Exception(s"Unknown role named $name"))
-        }
-    }
-    db.run(actions)
 
-  }
   def newRules(role_name: String, request: Request, allowOrDeny: Boolean, paths: Seq[Path], expireO: Option[Timestamp]): Future[Option[Int]] = {
     val expire: Timestamp = expireO.getOrElse(new Timestamp(Long.MaxValue))
     val action = roles.filter { role => role.name === role_name }.map(_.roleid).result.flatMap {
