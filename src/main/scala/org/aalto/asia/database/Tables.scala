@@ -15,110 +15,39 @@ import scala.language.postfixOps
 import org.slf4j.LoggerFactory
 //import slick.driver.H2Driver.api._
 import slick.jdbc.meta.MTable
-import org.aalto.asia.RequestType
 
 import slick.backend.DatabaseConfig
 //import slick.driver.H2Driver.api._
 import slick.driver.JdbcProfile
 import slick.lifted.{ Index, ForeignKeyQuery, ProvenShape }
 import types.Path
-
-case class PermissionResult(
-  roles: Set[String],
-  allowed: Seq[Path],
-  denied: Seq[Path])
-
-sealed trait Request {
-  def mask: Int
-}
-
-case class Read() extends Request {
-  val mask: Int = 1
-}
-
-case class Write() extends Request {
-  val mask: Int = 2
-}
-case class Call() extends Request {
-  val mask: Int = 4
-}
-case class Delete() extends Request {
-  val mask: Int = 8
-}
-case class ReadWrite() extends Request {
-  val mask: Int = 2 | 1
-}
-case class ReadCall() extends Request {
-  val mask: Int = 4 | 1
-}
-case class ReadDelete() extends Request {
-  val mask: Int = 8 | 1
-}
-case class WriteDelete() extends Request {
-  val mask: Int = 8 | 2
-}
-case class WriteCall() extends Request {
-  val mask: Int = 4 | 2
-}
-case class CallDelete() extends Request {
-  val mask: Int = 8 | 4
-}
-case class ReadWriteCall() extends Request {
-  val mask: Int = 2 | 1 | 4
-}
-case class ReadWriteDelete() extends Request {
-  val mask: Int = 2 | 1 | 8
-}
-case class ReadCallDelete() extends Request {
-  val mask: Int = 4 | 1 | 8
-}
-case class WriteCallDelete() extends Request {
-  val mask: Int = 2 | 4 | 8
-}
-case class ReadWriteCallDelete() extends Request {
-  val mask: Int = 2 | 1 | 4 | 8
-}
-
-import RequestType._
-object Request {
-  def apply(requestType: RequestType): Request = {
-    requestType match {
-      case RequestType.Read => Read()
-      case RequestType.Write => Write()
-      case RequestType.Call => Call()
-      case RequestType.Delete => Delete()
-    }
-  }
-  def apply(mask: Int): Request = {
-    mask match {
-      case 1 => Read()
-      case 2 => Write()
-      case 3 => ReadWrite()
-      case 4 => Call()
-      case 5 => ReadCall()
-      case 8 => Delete()
-      case 9 => ReadDelete()
-    }
-  }
-}
+import org.aalto.asia.requests._
 
 import Request._
 
 case class AuthEntry(
-  val roleid: Option[Long],
+  val groupId: Option[Long],
   val request: Int, //Bit flag
   val allow: Boolean,
   val path: Path,
   val expire: Timestamp)
 
-case class RoleEntry(
-  val roleID: Option[Long],
-  val name: String,
-  val expire: Timestamp)
+case class UserEntry(
+  val id: Option[Long],
+  val name: String)
+
+case class GroupEntry(
+  val id: Option[Long],
+  val name: String)
 
 case class MemberEntry(
-  val roleID: Long,
-  val memberID: Long,
+  val groupId: Long,
+  val userId: Long,
+  val expire: Timestamp)
+
+case class SubGroupEntry(
+  val groupId: Long,
+  val subGroupId: Long,
   val expire: Timestamp)
 
 trait DBBase {
@@ -149,58 +78,95 @@ trait AuthorizationTables extends DBBase {
     { i: Int => Request(i) } // String to Path
   )
 
-  class RolesTable(tag: Tag) extends Table[RoleEntry](tag, "ROLES") {
-    def roleid: Rep[Long] = column[Long]("ROLEID", O.PrimaryKey, O.AutoInc)
+  class UsersTable(tag: Tag) extends Table[UserEntry](tag, "USERS") {
+    def userId: Rep[Long] = column[Long]("USER_ID", O.PrimaryKey, O.AutoInc)
     def name: Rep[String] = column[String]("NAME")
-    def expire: Rep[Timestamp] = column[Timestamp]("EXPIRE")
 
-    def nameIndex = index("NAMEINDEX", name, unique = true)
+    def nameIndex = index("NAME_INDEX", name, unique = true)
 
-    def * = (roleid?, name, expire) <> (RoleEntry.tupled, RoleEntry.unapply)
+    def * = (userId?, name) <> (UserEntry.tupled, UserEntry.unapply)
   }
 
-  class Roles extends TableQuery[RolesTable](new RolesTable(_))
-  val roles = new Roles()
+  class Users extends TableQuery[UsersTable](new UsersTable(_))
+  val usersTable = new Users()
 
-  class AuthorizationTable(tag: Tag) extends Table[AuthEntry](tag, "AUTHENTRIES") {
-    def roleid: Rep[Long] = column[Long]("ROLEID")
+  class GroupsTable(tag: Tag) extends Table[GroupEntry](tag, "GROUPS") {
+    def groupId: Rep[Long] = column[Long]("GROUP_ID", O.PrimaryKey, O.AutoInc)
+    def name: Rep[String] = column[String]("NAME")
+
+    def nameIndex = index("NAME_INDEX", name, unique = true)
+
+    def * = (groupId?, name) <> (GroupEntry.tupled, GroupEntry.unapply)
+  }
+
+  class Groups extends TableQuery[GroupsTable](new GroupsTable(_))
+  val groupsTable = new Groups()
+
+  class MembersTable(tag: Tag) extends Table[MemberEntry](tag, "MEMBERS") {
+    def groupId: Rep[Long] = column[Long]("GROUP_ID")
+    def userId: Rep[Long] = column[Long]("USER_ID")
+    def userIndex = index("USER_INDEX", userId, unique = false)
+    def groupIndex = index("GROUP_INDEX", groupId, unique = false)
+    def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def usersFK = foreignKey("USER_FK", userId, usersTable)(_.userId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def * = (groupId, userId) <> (MemberEntry.tupled, MemberEntry.unapply)
+  }
+  class Members extends TableQuery[MembersTable](new MembersTable(_))
+  val membersTable = new Members()
+
+  class SubGroupsTable(tag: Tag) extends Table[SubGroupEntry](tag, "SUBGROUPS") {
+    def groupId: Rep[Long] = column[Long]("GROUP_ID")
+    def subGroupId: Rep[Long] = column[Long]("SUB_GROUP_ID")
+    def subGroupIndex = index("SUB_GROUP_INDEX", userId, unique = false)
+    def groupIndex = index("GROUP_INDEX", groupId, unique = false)
+    def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def subgroupsFK = foreignKey("SUBGROUP_FK", subGroupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def * = (groupId, subGroupId) <> (SubGroupEntry.tupled, SubGroupEntry.unapply)
+  }
+  class SubGroups extends TableQuery[SubGroupsTable](new SubGroupsTable(_))
+  val subGroupsTable = new SubGroups()
+
+  class RulesTable(tag: Tag) extends Table[RuleEntry](tag, "RULES") {
+    def groupId: Rep[Long] = column[Long]("GROUP_ID")
     def request: Rep[Int] = column[Int]("REQUEST")
     def path: Rep[Path] = column[Path]("PATH")
     def allow: Rep[Boolean] = column[Boolean]("ALLOW_OR_DENY")
     def expire: Rep[Timestamp] = column[Timestamp]("EXPIRE")
 
-    def roleIndex = index("ROLEINDEX", roleid, unique = false)
-    def roleRequestIndex = index("ROLEREQUESTINDEX", (roleid, request), unique = false)
+    def groupIndex = index("GROUP_INDEX", groupId, unique = false)
+    def groupRequestIndex = index("GROUP_REQUEST_INDEX", (groupId, request), unique = false)
 
-    def rolesFK = foreignKey("ROLE_FK", roleid, roles)(_.roleid, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-    def * = (roleid?, request, allow, path, expire) <> (AuthEntry.tupled, AuthEntry.unapply)
+    def groupsFK = foreignKey("GROUP_FK", groupId, groups)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def * = (groupId?, request, allow, path, expire) <> (AuthEntry.tupled, AuthEntry.unapply)
   }
 
-  class Authorizations extends TableQuery[AuthorizationTable](new AuthorizationTable(_)) {
-
-    def selectByRole(roleId: Long): DBSIOro[AuthEntry] = selectByRoleQ(roleId).result
-    //TODO:How to filter with request?
-    //def selectByRoleAndRequest(roleId: Long,request:Request) = this.filter{ row => row.roleid === roleId && row.request.contains(request)}
-    protected def selectByRoleQ(roleId: Long) = this.filter { row => row.roleid === roleId }
-
-    def selectByRoles(roleIds: Seq[Long]): DBSIOro[AuthEntry] = selectByRolesQ(roleIds).result
-    protected def selectByRolesQ(roleIds: Seq[Long]) = this.filter { row => row.roleid inSet roleIds.toSet }
-  }
-  val authRules = new Authorizations()
+  class Rules extends TableQuery[RulesTable](new RulesTable(_))
+  val rulesTable = new Rules()
 
   def currentTimestamp: Timestamp = new Timestamp(new Date().getTime())
-  protected def queryUserRulesForRequest(role_names: Set[String], request: Request) = {
-    val roleIds = roles.filter { row => row.name inSet role_names } map (_.roleid)
-    val rulesForRoles = for {
-      (id, rule) <- roleIds join authRules.filter(_.expire >= currentTimestamp) on { (id, rule) => id === rule.roleid }
-    } yield (rule)
-    val rulesForRequest = rulesForRoles.filter {
-      rule =>
-        rule.expire >= currentTimestamp && (
-          rule.request === request.mask ||
-          rule.request === (request.mask | 1) ||
-          rule.request === (request.mask | 2))
+  protected def queryUserRulesForRequest(username: String, request: Request) = {
+    val user = usersTable.filter { row => row.name == username }
+    val groups = for {
+      (user, member) <- user join membersTable on { (user, memberEntry) => memberEntry.userId === user.userId }
+    } yield (member.groupId)
+    def tmp(groupIds: Set[Long]): DBIOro[Set[Long]] = {
+      subGroups.filter {
+        row => row.subGroupId inSet (groupIds)
+      }.result.map {
+        parentGroupIds: Seq[Long] =>
+          groupIds ++ parentGroupIds.toSet
+      }.flatMap {
+        gIds: Set[Long] =>
+          if (gIds.lenght > groupIds.lenght) {
+            tmp(gIds)
+          } else {
+            DBIOAction.successful(gIds)
+          }
+      }
     }
-    rulesForRequest
+    groups.result.flatMap {
+      groupIds: Seq[Long] =>
+        tmp(groupIds.toSet)
+    }
   }
 }

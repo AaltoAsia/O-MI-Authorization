@@ -24,6 +24,7 @@ import slick.driver.JdbcProfile
 import slick.lifted.{ Index, ForeignKeyQuery, ProvenShape }
 import types.Path
 import org.aalto.asia.AuthConfigSettings
+import org.aalto.asia.requests._
 
 class AuthorizationDB(
   implicit
@@ -65,6 +66,19 @@ class AuthorizationDB(
   def newRole(role_name: String, expireO: Option[Timestamp]): Future[Int] = {
     val expire: Timestamp = expireO.getOrElse(new Timestamp(Long.MaxValue))
     val action = { roles += RoleEntry(None, role_name, expire) }
+    val r = db.run(action)
+    r
+  }
+
+  def removeRole(role_name: String): Future[Int] = {
+    val role = roles.filter { row => row.name === role_name }
+    val action = role.map(_.roleid).result.flatMap {
+      roleIds: Seq[Long] =>
+        authRules.filter { row => row.roleid inSet (roleIds.toSet) }.delete.flatMap {
+          deleted: Int =>
+            role.delete.map(_ + deleted)
+        }
+    }
     val r = db.run(action)
     r
   }
