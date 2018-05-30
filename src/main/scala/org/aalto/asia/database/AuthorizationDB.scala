@@ -36,71 +36,91 @@ class AuthorizationDB(
   val db: Database = dc.db
 
   def initialise(): Unit = {
-    val actions = roles.filter(role => role.name === "DEFAULT").result.flatMap {
-      foundRoles: Seq[RoleEntry] =>
-        foundRoles.headOption match {
-          case Some(role) =>
-            slick.dbio.DBIOAction.successful(role.roleID)
-          case None =>
-            val expire: Timestamp = new Timestamp(Long.MaxValue)
-            val insert = { roles += RoleEntry(None, "DEFAULT", expire) }
-            insert
+    val expected = Set("DEFAULT", "ADMIN")
+    val actions = groupsTable.filter(group => group.name inSet (expected)).result.flatMap {
+      foundGroups: Seq[GroupEntry] =>
+        val entries = expected.filter(!foundGroups.contains(_)).map {
+          groupName => GroupEntry(None, groupName)
+        }
+        if (entries.nonEmpty) {
+          groupsTable ++= entries
+        } else {
+          DBIO.successful(foundGroups.toSet)
         }
     }
     db.run(actions)
   }
   initialise()
 
-  def userRulesForRequest(role_names: Set[String], request: Request): Future[PermissionResult] = {
-    db.run(queryUserRulesForRequest(role_names, request).result.map {
-      case ars: Seq[AuthEntry] if ars.isEmpty =>
-        throw new Exception("No rules for role or unknown role")
-      case ars: Seq[AuthEntry] =>
-        val (deniedAR, allowedAR) = ars.partition(_.allow)
-        PermissionResult(
-          role_names,
-          allowedAR.map(_.path),
-          deniedAR.map(_.path))
-    })
+  def userRulesForRequest(username: String, request: Request): Future[PermissionResult] = {
+    db.run(queryUserRulesForRequest(username, request))
   }
-  def newRole(role_name: String, expireO: Option[Timestamp]): Future[Int] = {
-    val expire: Timestamp = expireO.getOrElse(new Timestamp(Long.MaxValue))
-    val action = { roles += RoleEntry(None, role_name, expire) }
+
+  def newUser(username: String): Future[Int] = {
+    val action = { usersTable += UserEntry(None, username) }
+    val r = db.run(action)
+    r.flatMap {
+      i =>
+        newGroup(s"${username}_GROUP").flatMap {
+          u =>
+            joinGroup(username, s"${username}_GROUP").map(_ => i)
+        }
+    }
+  }
+
+  def newGroup(groupname: String): Future[Int] = {
+    val action = { groupsTable += GroupEntry(None, groupname) }
     val r = db.run(action)
     r
   }
-
-  def removeRole(role_name: String): Future[Int] = {
-    val role = roles.filter { row => row.name === role_name }
-    val action = role.map(_.roleid).result.flatMap {
-      roleIds: Seq[Long] =>
-        authRules.filter { row => row.roleid inSet (roleIds.toSet) }.delete.flatMap {
-          deleted: Int =>
-            role.delete.map(_ + deleted)
+  def joinGroup(username: String, group: String) = {
+    val ids = for {
+      user <- usersTable.filter { row => row.name === username }
+      group <- groupsTable.filter { row => row.name === group }
+    } yield (group.groupId, user.userId)
+    val action = ids.result.flatMap {
+      tuples =>
+        val entries = tuples.map {
+          case (gid, uid) => MemberEntry(gid, uid)
         }
+        membersTable ++= entries
+    }
+    val r = db.run(action)
+    r
+  }
+  def newSubGroup(subgroup: String, group: String) = {
+    val ids = for {
+      sgroup <- groupsTable.filter { row => row.name === subgroup }
+      group <- groupsTable.filter { row => row.name === group }
+    } yield (group.groupId, sgroup.groupId)
+    val action = ids.result.flatMap {
+      tuples =>
+        val entries = tuples.map {
+          case (gid, sgid) => SubGroupEntry(gid, sgid)
+        }
+        subGroupsTable ++= entries
     }
     val r = db.run(action)
     r
   }
 
-  def newRules(role_name: String, request: Request, allowOrDeny: Boolean, paths: Seq[Path], expireO: Option[Timestamp]): Future[Option[Int]] = {
-    val expire: Timestamp = expireO.getOrElse(new Timestamp(Long.MaxValue))
-    val action = roles.filter { role => role.name === role_name }.map(_.roleid).result.flatMap {
+  def newRulesForPaths(groupname: String, request: Request, allowOrDeny: Boolean, paths: Seq[Path]): Future[Option[Int]] = {
+    val action = groupsTable.filter { row => row.name === groupname }.map(_.groupId).result.flatMap {
       ids: Seq[Long] =>
         ids.headOption match {
           case Some(id) =>
+            //TODO: Check and update for old rules
             val entries = paths.map {
               path =>
-                AuthEntry(
-                  Some(id),
-                  request.mask,
+                RuleEntry(
+                  id,
+                  request.toString,
                   allowOrDeny,
-                  path,
-                  expire)
+                  path)
             }
-            authRules ++= entries
+            rulesTable ++= entries
           case None =>
-            slick.dbio.DBIOAction.failed(new Exception(s"Unknown role named $role_name"))
+            slick.dbio.DBIOAction.failed(new Exception(s"Unknown role named $groupname"))
         }
     }
     db.run(action)

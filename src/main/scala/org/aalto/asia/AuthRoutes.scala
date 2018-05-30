@@ -17,6 +17,7 @@ import scala.concurrent.Future
 import akka.pattern.ask
 import akka.util.Timeout
 import database._
+import org.aalto.asia.requests._
 
 trait AuthRoutes extends JsonSupport {
 
@@ -28,32 +29,34 @@ trait AuthRoutes extends JsonSupport {
   // Required by the `ask` (?) method below
   implicit lazy val timeout = Timeout(5.seconds) // usually we'd obtain the timeout from the system's configuration
 
-  lazy val readRoute = path("read" / Segment) { role_name: String =>
-    val permissions: Future[PermissionResult] = authDB.userRulesForRequest(Set(role_name), Read())
-    complete(permissions)
-  }
-
   //TODO: rename path
-  lazy val jsRoute = path("auth") {
+  lazy val authRoute = path("auth") {
     post {
       entity(as[PermissionRequest]) { pr =>
-        val permissions: Future[PermissionResult] = authDB.userRulesForRequest(pr.roles, Request(pr.requestType))
+        val permissions: Future[PermissionResult] = authDB.userRulesForRequest(pr.username, Request(pr.requestType))
         complete(permissions)
       }
     }
   }
 
-  /*
   lazy val mngRoute = path("mng") {
     post {
-      entity(as[AddRole]){ ar =>
+      entity(as[AddUser]) { ar: AddUser =>
+        val result: Future[Int] = authDB.newUser(ar.username)
+        complete(result)
+      } ~ entity(as[AddGroup]) { ar: AddGroup =>
+        val result: Future[Int] = authDB.newGroup(ar.groupname)
+        complete(result)
+      } ~ entity(as[JoinGroup]) { ar: JoinGroup =>
+        val result: Future[Option[Int]] = authDB.joinGroup(ar.username, ar.groupname)
+        complete(result)
+      } ~ entity(as[AddRules]) { ar: AddRules =>
+        //TODO: Rething AddRule format: (path, request, allow) tuples?
+        val result: Future[Option[Int]] = authDB.newRulesForPaths(ar.group, ar.request, ar.allow, ar.paths)
+        complete(result)
       }
     }
-  }*/
-
-  lazy val writeRoute = path("write" / Segment) { role_name: String =>
-    val permissions: Future[PermissionResult] = authDB.userRulesForRequest(Set(role_name), Write())
-    complete(permissions)
   }
-  val routes = get(concat(readRoute, writeRoute))
+
+  val routes = mngRoute ~ authRoute
 }

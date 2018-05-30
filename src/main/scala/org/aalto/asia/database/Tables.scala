@@ -25,16 +25,17 @@ import org.aalto.asia.requests._
 
 import Request._
 
-case class AuthEntry(
-  val groupId: Option[Long],
-  val request: Int, //Bit flag
+case class RuleEntry(
+  val groupId: Long,
+  val request: String,
   val allow: Boolean,
-  val path: Path,
-  val expire: Timestamp)
+  val path: Path)
 
 case class UserEntry(
   val id: Option[Long],
-  val name: String)
+  val name: String) {
+  val groupName = s"${name}_GROUP"
+}
 
 case class GroupEntry(
   val id: Option[Long],
@@ -42,13 +43,11 @@ case class GroupEntry(
 
 case class MemberEntry(
   val groupId: Long,
-  val userId: Long,
-  val expire: Timestamp)
+  val userId: Long)
 
 case class SubGroupEntry(
   val groupId: Long,
-  val subGroupId: Long,
-  val expire: Timestamp)
+  val subGroupId: Long)
 
 trait DBBase {
   val dc: DatabaseConfig[JdbcProfile] //= DatabaseConfig.forConfig[JdbcProfile](database.dbConfigName)
@@ -71,11 +70,6 @@ trait AuthorizationTables extends DBBase {
   implicit lazy val pathColumnType = MappedColumnType.base[Path, String](
     { p: Path => p.toString },
     { str: String => Path(str) } // String to Path
-  )
-
-  implicit val requestColumnType = MappedColumnType.base[Request, Int](
-    { p: Request => p.mask },
-    { i: Int => Request(i) } // String to Path
   )
 
   class UsersTable(tag: Tag) extends Table[UserEntry](tag, "USERS") {
@@ -117,7 +111,7 @@ trait AuthorizationTables extends DBBase {
   class SubGroupsTable(tag: Tag) extends Table[SubGroupEntry](tag, "SUBGROUPS") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID")
     def subGroupId: Rep[Long] = column[Long]("SUB_GROUP_ID")
-    def subGroupIndex = index("SUB_GROUP_INDEX", userId, unique = false)
+    def subGroupIndex = index("SUB_GROUP_INDEX", subGroupId, unique = false)
     def groupIndex = index("GROUP_INDEX", groupId, unique = false)
     def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
     def subgroupsFK = foreignKey("SUBGROUP_FK", subGroupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
@@ -128,16 +122,15 @@ trait AuthorizationTables extends DBBase {
 
   class RulesTable(tag: Tag) extends Table[RuleEntry](tag, "RULES") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID")
-    def request: Rep[Int] = column[Int]("REQUEST")
+    def request: Rep[String] = column[String]("REQUEST")
     def path: Rep[Path] = column[Path]("PATH")
     def allow: Rep[Boolean] = column[Boolean]("ALLOW_OR_DENY")
-    def expire: Rep[Timestamp] = column[Timestamp]("EXPIRE")
 
     def groupIndex = index("GROUP_INDEX", groupId, unique = false)
     def groupRequestIndex = index("GROUP_REQUEST_INDEX", (groupId, request), unique = false)
 
-    def groupsFK = foreignKey("GROUP_FK", groupId, groups)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-    def * = (groupId?, request, allow, path, expire) <> (AuthEntry.tupled, AuthEntry.unapply)
+    def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def * = (groupId, request, allow, path) <> (RuleEntry.tupled, RuleEntry.unapply)
   }
 
   class Rules extends TableQuery[RulesTable](new RulesTable(_))
@@ -145,28 +138,63 @@ trait AuthorizationTables extends DBBase {
 
   def currentTimestamp: Timestamp = new Timestamp(new Date().getTime())
   protected def queryUserRulesForRequest(username: String, request: Request) = {
-    val user = usersTable.filter { row => row.name == username }
+    val user = usersTable.filter { row => row.name === username }
     val groups = for {
       (user, member) <- user join membersTable on { (user, memberEntry) => memberEntry.userId === user.userId }
     } yield (member.groupId)
     def tmp(groupIds: Set[Long]): DBIOro[Set[Long]] = {
-      subGroups.filter {
+      subGroupsTable.filter {
         row => row.subGroupId inSet (groupIds)
-      }.result.map {
+      }.map(_.groupId).result.map {
         parentGroupIds: Seq[Long] =>
           groupIds ++ parentGroupIds.toSet
       }.flatMap {
         gIds: Set[Long] =>
-          if (gIds.lenght > groupIds.lenght) {
+          if (gIds.size > groupIds.size) {
             tmp(gIds)
           } else {
-            DBIOAction.successful(gIds)
+            DBIO.successful(gIds)
           }
       }
     }
-    groups.result.flatMap {
+    val allGroups: DBIOro[Set[Long]] = groups.result.flatMap {
       groupIds: Seq[Long] =>
         tmp(groupIds.toSet)
     }
+    val action = allGroups.flatMap {
+      groupIds: Set[Long] =>
+        rulesTable.filter {
+          row =>
+            row.groupId inSet (groupIds)
+        }.filter {
+          row =>
+            row.request like (s"%${request.toString}%")
+        }.groupBy(_.allow).result.flatMap {
+          tuples =>
+            val (denies, allows) = tuples.map {
+              case (b, s) =>
+                (b, s.result.map {
+                  rules: Seq[RuleEntry] => rules.map(_.path)
+                })
+            }.partition { case (b, _) => b }
+            DBIO.fold(denies.map(_._2), Vector.empty[Path]) {
+              case (result: Seq[Path], r: Seq[Path]) =>
+                result ++ r
+            }.flatMap {
+              deniedPaths: Seq[Path] =>
+                DBIO.fold(allows.map(_._2), Vector.empty[Path]) {
+                  case (result: Seq[Path], r: Seq[Path]) =>
+                    result ++ r
+                }.map {
+                  allowedPaths: Seq[Path] =>
+                    PermissionResult(
+                      allowedPaths,
+                      deniedPaths)
+                }
+            }
+
+        }
+    }
+    action
   }
 }
