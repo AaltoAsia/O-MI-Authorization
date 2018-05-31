@@ -67,8 +67,8 @@ case class GetPermissions(
 )
 
 case class PermissionResult(
-  allowed: Seq[Path],
-  denied: Seq[Path])
+  allowed: Set[Path],
+  denied: Set[Path])
 
 case class Rule(path: Path, request: Request, allow: Boolean)
 case class SetRules(

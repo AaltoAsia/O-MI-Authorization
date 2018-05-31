@@ -53,6 +53,7 @@ class AuthorizationDB(
   initialise()
 
   def userRulesForRequest(username: String, request: Request): Future[PermissionResult] = {
+    //TODO: How to make group hierachy affect permissions
     db.run(queryUserRulesForRequest(username, request))
   }
 
@@ -96,12 +97,24 @@ class AuthorizationDB(
       groupIds: Seq[Long] =>
         groupIds.headOption match {
           case Some(groupId) =>
-            //TODO: Check and update for old rules
-            val entries = pathRules.map {
+            val insertOrUpdates = pathRules.map {
               case Rule(path: Path, request: Request, allow: Boolean) =>
-                RuleEntry(groupId, request.toString, allow, path)
+                val existsQ = rulesTable.filter {
+                  row =>
+                    row.path === path &&
+                      row.groupId === groupId &&
+                      row.allow === allow
+                }
+                existsQ.result.flatMap {
+                  rules =>
+                    rules.headOption match {
+                      case None => { rulesTable += RuleEntry(groupId, request.toString, allow, path) }
+                      case Some(rule) => { existsQ.map(_.request).update(request.toString) }
+                    }
+                }
+
             }
-            rulesTable ++= entries
+            DBIO.sequence(insertOrUpdates)
           case None =>
             slick.dbio.DBIOAction.failed(new Exception(s"Unknown role named $groupname"))
         }

@@ -177,19 +177,19 @@ trait AuthorizationTables extends DBBase {
                   rules: Seq[RuleEntry] => rules.map(_.path)
                 })
             }.partition { case (b, _) => b }
-            DBIO.fold(denies.map(_._2), Vector.empty[Path]) {
+            DBIO.fold(denies.map(_._2), Seq.empty[Path]) {
               case (result: Seq[Path], r: Seq[Path]) =>
-                result ++ r
+                (result.toSet intersect r.toSet).toSeq
             }.flatMap {
               deniedPaths: Seq[Path] =>
-                DBIO.fold(allows.map(_._2), Vector.empty[Path]) {
+                DBIO.fold(allows.map(_._2), Seq.empty[Path]) {
                   case (result: Seq[Path], r: Seq[Path]) =>
                     result ++ r
                 }.map {
                   allowedPaths: Seq[Path] =>
                     PermissionResult(
-                      allowedPaths,
-                      deniedPaths)
+                      allowedPaths.toSet,
+                      deniedPaths.toSet)
                 }
             }
 
