@@ -32,7 +32,7 @@ trait AuthRoutes extends JsonSupport {
   //TODO: rename path
   lazy val authRoute = path("auth") {
     post {
-      entity(as[PermissionRequest]) { pr =>
+      entity(as[GetPermissions]) { pr =>
         val permissions: Future[PermissionResult] = authDB.userRulesForRequest(pr.username, Request(pr.requestType))
         complete(permissions)
       }
@@ -42,17 +42,17 @@ trait AuthRoutes extends JsonSupport {
   lazy val mngRoute = path("mng") {
     post {
       entity(as[AddUser]) { ar: AddUser =>
-        val result: Future[Int] = authDB.newUser(ar.username)
+        val result: Future[Unit] = authDB.newUser(ar.username)
         complete(result)
       } ~ entity(as[AddGroup]) { ar: AddGroup =>
-        val result: Future[Int] = authDB.newGroup(ar.groupname)
+        val result: Future[Unit] = authDB.newGroup(ar.groupname)
         complete(result)
-      } ~ entity(as[JoinGroup]) { ar: JoinGroup =>
-        val result: Future[Option[Int]] = authDB.joinGroup(ar.username, ar.groupname)
+      } ~ entity(as[JoinGroups]) { ar: JoinGroups =>
+        val result: Future[Unit] = authDB.joinGroups(ar.username, ar.groups)
         complete(result)
-      } ~ entity(as[AddRules]) { ar: AddRules =>
+      } ~ entity(as[SetRules]) { ar: SetRules =>
         //TODO: Rething AddRule format: (path, request, allow) tuples?
-        val result: Future[Option[Int]] = authDB.newRulesForPaths(ar.group, ar.request, ar.allow, ar.paths)
+        val result: Future[Unit] = authDB.setRulesForPaths(ar.group, ar.rules)
         complete(result)
       }
     }

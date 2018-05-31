@@ -197,4 +197,19 @@ trait AuthorizationTables extends DBBase {
     }
     action
   }
+
+  protected def joinGroupsAction(username: String, groups: Set[String]) = {
+    val crossJoin = for {
+      user <- usersTable.filter { row => row.name === username }
+      group <- groupsTable.filter { row => row.name inSet (groups) }
+    } yield (group.groupId, user.userId)
+    val action = crossJoin.result.flatMap {
+      tuples =>
+        val entries = tuples.map {
+          case (gid, uid) => MemberEntry(gid, uid)
+        }
+        membersTable ++= entries
+    }
+    action
+  }
 }

@@ -13,55 +13,55 @@ sealed trait Request {
 }
 
 case class Read() extends Request {
-  override def toString = "READ"
+  override def toString = "r"
 }
 
 case class Write() extends Request {
-  override def toString = "WRITE"
+  override def toString = "w"
 }
 
 case class Call() extends Request {
-  override def toString = "CALL"
+  override def toString = "c"
 }
 case class Delete() extends Request {
-  override def toString = "DELETE"
+  override def toString = "d"
 }
 case class ReadWrite() extends Request {
-  override def toString = "READ|WRITE"
+  override def toString = "rw"
 }
 case class ReadCall() extends Request {
-  override def toString = "READ|CALL"
+  override def toString = "rc"
 }
 case class ReadDelete() extends Request {
-  override def toString = "READ|DELETE"
+  override def toString = "rd"
 }
 case class WriteDelete() extends Request {
-  override def toString = "WRITE|DELETE"
+  override def toString = "wd"
 }
 case class WriteCall() extends Request {
-  override def toString = "WRITE|CALL"
+  override def toString = "wc"
 }
 case class CallDelete() extends Request {
-  override def toString = "CALL|DELETE"
+  override def toString = "cd"
 }
 case class ReadWriteCall() extends Request {
-  override def toString = "READ|WRITE|CALL"
+  override def toString = "rwc"
 }
 case class ReadWriteDelete() extends Request {
-  override def toString = "READ|WRITE|DELETE"
+  override def toString = "rwd"
 }
 case class ReadCallDelete() extends Request {
-  override def toString = "READ|CALL|DELETE"
+  override def toString = "rcd"
 }
 case class WriteCallDelete() extends Request {
-  override def toString = "WRITE|CALL|DELETE"
+  override def toString = "wcd"
 }
 case class ReadWriteCallDelete() extends Request {
-  override def toString = "READ|WRITE|CALL|DELETE"
+  override def toString = "rwcd"
 }
 
 import RequestType._
-case class PermissionRequest(
+case class GetPermissions(
   val username: String,
   val requestType: RequestType //Read,Call,Write,Delete
 )
@@ -70,14 +70,12 @@ case class PermissionResult(
   allowed: Seq[Path],
   denied: Seq[Path])
 
-case class AddRules(
+case class Rule(path: Path, request: Request, allow: Boolean)
+case class SetRules(
   val group: String,
-  val request: Request,
-  val allow: Boolean,
-  val paths: Seq[Path])
+  val rules: Seq[Rule])
 case class RemoveRule(
   val group: String,
-  val allow: Boolean,
   val path: Path)
 
 case class AddUser(val username: String)
@@ -86,8 +84,8 @@ case class RemoveUser(val username: String)
 case class AddGroup(val groupname: String)
 case class RemoveGroup(val groupname: String)
 
-case class JoinGroup(val username: String, val groupname: String)
-case class LeaveGroup(val username: String, val groupname: String)
+case class JoinGroups(val username: String, val groups: Set[String])
+case class LeaveGroups(val username: String, val grous: Set[String])
 
 object Request {
   def apply(requestType: RequestType): Request = {
@@ -100,21 +98,21 @@ object Request {
   }
   def apply(str: String): Request = {
     str match {
-      case "READ" => Read()
-      case "WRITE" => Write()
-      case "READ|WRITE" => ReadWrite()
-      case "CALL" => Call()
-      case "READ|CALL" => ReadCall()
-      case "WRITE|CALL" => WriteCall()
-      case "READ|WRITE|CALL" => ReadWriteCall()
-      case "DELETE" => Delete()
-      case "READ" => ReadDelete()
-      case "WRITE|DELETE" => WriteDelete()
-      case "READ|WRITE|DELETE" => ReadWriteDelete()
-      case "CALL|DELETE" => CallDelete()
-      case "READ|CALL|DELETE" => ReadCallDelete()
-      case "WRITE|CALL|DELETE" => WriteCallDelete()
-      case "READ|WRITE|CALL|DELETE" => ReadWriteCallDelete()
+      case "r" => Read()
+      case "w" => Write()
+      case "rw" => ReadWrite()
+      case "c" => Call()
+      case "rc" => ReadCall()
+      case "wc" => WriteCall()
+      case "rwc" => ReadWriteCall()
+      case "d" => Delete()
+      case "rd" => ReadDelete()
+      case "wd" => WriteDelete()
+      case "rwd" => ReadWriteDelete()
+      case "cd" => CallDelete()
+      case "rcd" => ReadCallDelete()
+      case "wcd" => WriteCallDelete()
+      case "rwcd" => ReadWriteCallDelete()
     }
   }
 }
