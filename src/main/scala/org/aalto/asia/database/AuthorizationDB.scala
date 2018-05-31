@@ -72,8 +72,44 @@ class AuthorizationDB(
     val action = { groupsTable += GroupEntry(None, groupname) }
     db.run(action).map(_ => Unit)
   }
+  def removeUser(username: String): Future[Unit] = {
+    db.run(usersTable.filter(row => row.name === username).delete).map(_ => Unit)
+    //Triggers should remove any row referinc with foreing key
+  }
+  def removeGroup(groupname: String): Future[Unit] = {
+    groupname match {
+      case "DEFAULT" => Future.successful()
+      case "ADMIN" => Future.successful()
+      case usergroup: String if usergroup.endsWith("_USERGROUP") =>
+        Future.failed(new Exception("Trying to remove a USERGROUP"))
+      case group: String =>
+        db.run(groupsTable.filter(row => row.name === groupname).delete).map(_ => Unit)
+      //Triggers should remove any row referinc with foreing key
+    }
+  }
   def joinGroups(username: String, groups: Set[String]): Future[Unit] = {
     db.run(joinGroupsAction(username, groups)).map(_ => Unit)
+  }
+  def leaveGroups(username: String, groups: Set[String]): Future[Unit] = {
+    val user = usersTable.filter(row => row.name === username).map(_.userId).result
+    val groupidsIO = groupsTable.filter(row => row.name inSet (groups)).map(_.groupId).result
+    val action = user.flatMap {
+      uids: Seq[Long] =>
+        uids.headOption match {
+          case Some(uid: Long) =>
+            groupidsIO.flatMap {
+              groupids =>
+                membersTable.filter {
+                  row =>
+                    row.userId === uid &&
+                      (row.groupId inSet (groupids))
+                }.delete
+            }
+          case None =>
+            DBIO.failed(new Exception(s"Unknown user $username"))
+        }
+    }
+    db.run(action).map(_ => Unit)
   }
   def newSubGroup(subgroup: String, group: String) = {
     val ids = for {
@@ -87,12 +123,27 @@ class AuthorizationDB(
         }
         subGroupsTable ++= entries
     }
-    val r = db.run(action)
-    r
+    db.run(action).map(_ => Unit)
+  }
+  def exludeSubGroup(subgroup: String, group: String): Future[Unit] = {
+    val ids = for {
+      sgroup <- groupsTable.filter { row => row.name === subgroup }
+      group <- groupsTable.filter { row => row.name === group }
+    } yield (group.groupId, sgroup.groupId)
+    val action = ids.result.flatMap {
+      tuples =>
+        val removes = tuples.map {
+          case (gid, sgid) =>
+            subGroupsTable.filter {
+              row => row.groupId === gid && row.subGroupId === sgid
+            }.result
+        }
+        DBIO.sequence(removes)
+    }
+    db.run(action).map(_ => Unit)
   }
 
   def setRulesForPaths(groupname: String, pathRules: Seq[Rule]): Future[Unit] = {
-    //TODO
     val action = groupsTable.filter { row => row.name === groupname }.map(_.groupId).result.flatMap {
       groupIds: Seq[Long] =>
         groupIds.headOption match {

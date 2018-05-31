@@ -85,7 +85,7 @@ case class AddGroup(val groupname: String)
 case class RemoveGroup(val groupname: String)
 
 case class JoinGroups(val username: String, val groups: Set[String])
-case class LeaveGroups(val username: String, val grous: Set[String])
+case class LeaveGroups(val username: String, val groups: Set[String])
 
 object Request {
   def apply(requestType: RequestType): Request = {
