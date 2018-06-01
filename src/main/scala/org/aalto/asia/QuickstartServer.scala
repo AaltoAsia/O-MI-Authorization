@@ -12,19 +12,13 @@ import org.aalto.asia.requests._
 import org.aalto.asia.types._
 import org.json4s._
 import org.json4s.JsonDSL._
-import de.heikoseeberger.akkahttpjson4s.Json4sSupport
-import org.json4s.{ DefaultFormats, Formats }
-import org.json4s._
-import org.json4s.native
 import org.json4s.native.Serialization
-import org.json4s.native.Serialization.{ read, write }
+import org.json4s.native.Serialization.write
 import database._
 
 object QuickstartServer extends App with AuthRoutes with JsonSupport {
 
-  override implicit val serialization = native.Serialization
-  override implicit val json4sFormats: Formats = DefaultFormats + new PathSerializer
-
+  implicit val formats = Serialization.formats(NoTypeHints) //+ new PathSerializer
   val addUser = AddUser("Tester1")
   val addGroup = AddGroup("Testers")
   val joinGroups = JoinGroups("Tester1", Set("Testers"))
@@ -33,13 +27,13 @@ object QuickstartServer extends App with AuthRoutes with JsonSupport {
   val removeUser = RemoveUser("Tester1")
   val removeGroup = RemoveGroup("Testers")
 
-  println(write(addUser))
-  println(write(addGroup))
-  println(write(joinGroups))
-  println(write(setDefault))
-  println(write(leaveGroups))
-  println(write(removeUser))
-  println(write(removeGroup))
+  println(write(addUser)(formats))
+  println(write(addGroup)(formats))
+  println(write(joinGroups)(formats))
+  println(write(setDefault)(formats))
+  println(write(leaveGroups)(formats))
+  println(write(removeUser)(formats))
+  println(write(removeGroup)(formats))
   // set up ActorSystem and other dependencies here
   implicit val system: ActorSystem = ActorSystem("O-MI-Authorization-Server")
   implicit val materializer: ActorMaterializer = ActorMaterializer()

@@ -10,7 +10,8 @@ import types.Path
 
 trait JsonSupport extends Json4sSupport {
   class PathSerializer extends CustomSerializer[Path](format => ({ case JString(s) => Path(s) }, { case p => JString(p.toString) }))
+  class RequestSerializer extends CustomSerializer[Request](format => ({ case JString(s) => Request(s) }, { case p => JString(p.toString) }))
   implicit val serialization = native.Serialization
-  implicit val json4sFormats: Formats = DefaultFormats + new PathSerializer
+  implicit val json4sFormats: Formats = DefaultFormats + new PathSerializer + new RequestSerializer
 }
 //#json-support
