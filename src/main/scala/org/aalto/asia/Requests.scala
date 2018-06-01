@@ -2,7 +2,7 @@ package org.aalto.asia.requests
 
 import java.sql.Timestamp
 
-import types.Path
+import org.aalto.asia.types.Path
 object RequestType extends Enumeration {
 
   type RequestType = Value

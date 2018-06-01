@@ -20,7 +20,7 @@ import slick.backend.DatabaseConfig
 //import slick.driver.H2Driver.api._
 import slick.driver.JdbcProfile
 import slick.lifted.{ Index, ForeignKeyQuery, ProvenShape }
-import types.Path
+import org.aalto.asia.types.Path
 import org.aalto.asia.requests._
 
 import Request._

@@ -39,27 +39,39 @@ trait AuthRoutes extends JsonSupport {
     }
   }
 
-  lazy val mngRoute = path("mng") {
-    post {
+  lazy val mngRoute = post {
+    path("add-user") {
       entity(as[AddUser]) { ar: AddUser =>
         val result: Future[Unit] = authDB.newUser(ar.username)
         complete(result)
-      } ~ entity(as[RemoveUser]) { ar: RemoveUser =>
+      }
+    } ~ path("remove-user") {
+      entity(as[RemoveUser]) { ar: RemoveUser =>
         val result: Future[Unit] = authDB.removeUser(ar.username)
         complete(result)
-      } ~ entity(as[AddGroup]) { ar: AddGroup =>
+      }
+    } ~ path("add-group") {
+      entity(as[AddGroup]) { ar: AddGroup =>
         val result: Future[Unit] = authDB.newGroup(ar.groupname)
         complete(result)
-      } ~ entity(as[RemoveGroup]) { ar: RemoveGroup =>
+      }
+    } ~ path("remove-group") {
+      entity(as[RemoveGroup]) { ar: RemoveGroup =>
         val result: Future[Unit] = authDB.removeGroup(ar.groupname)
         complete(result)
-      } ~ entity(as[JoinGroups]) { ar: JoinGroups =>
+      }
+    } ~ path("join-groups") {
+      entity(as[JoinGroups]) { ar: JoinGroups =>
         val result: Future[Unit] = authDB.joinGroups(ar.username, ar.groups)
         complete(result)
-      } ~ entity(as[LeaveGroups]) { ar: LeaveGroups =>
+      }
+    } ~ path("leave-groups") {
+      entity(as[LeaveGroups]) { ar: LeaveGroups =>
         val result: Future[Unit] = authDB.joinGroups(ar.username, ar.groups)
         complete(result)
-      } ~ entity(as[SetRules]) { ar: SetRules =>
+      }
+    } ~ path("set-rules") {
+      entity(as[SetRules]) { ar: SetRules =>
         val result: Future[Unit] = authDB.setRulesForPaths(ar.group, ar.rules)
         complete(result)
       }

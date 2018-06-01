@@ -12,7 +12,7 @@
  +    limitations under the License.                                              +
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-package types
+package org.aalto.asia.types
 import scala.collection.JavaConversions
 import scala.util.matching.Regex
 

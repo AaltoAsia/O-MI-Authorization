@@ -22,14 +22,14 @@ import slick.backend.DatabaseConfig
 //import slick.driver.H2Driver.api._
 import slick.driver.JdbcProfile
 import slick.lifted.{ Index, ForeignKeyQuery, ProvenShape }
-import types.Path
+import org.aalto.asia.types.Path
 import org.aalto.asia.AuthConfigSettings
 import org.aalto.asia.requests._
 
 class AuthorizationDB(
   implicit
-  val system: ActorSystem,
-  implicit val settings: AuthConfigSettings) extends AuthorizationTables {
+  val system: ActorSystem) extends AuthorizationTables {
+
   val dc: DatabaseConfig[JdbcProfile] = DatabaseConfig.forConfig[JdbcProfile](database.dbConfigName)
   import dc.driver.api._
   import dc.driver.api.DBIOAction
@@ -73,7 +73,12 @@ class AuthorizationDB(
     db.run(action).map(_ => Unit)
   }
   def removeUser(username: String): Future[Unit] = {
-    db.run(usersTable.filter(row => row.name === username).delete).map(_ => Unit)
+    db.run(usersTable.filter(row => row.name === username).delete.flatMap {
+      _ =>
+        val groupname = s"${username}_USERGROUP"
+        groupsTable.filter(row => row.name === groupname).delete
+
+    }).map(_ => Unit)
     //Triggers should remove any row referinc with foreing key
   }
   def removeGroup(groupname: String): Future[Unit] = {

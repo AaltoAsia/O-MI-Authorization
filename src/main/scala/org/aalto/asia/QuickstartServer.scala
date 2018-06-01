@@ -8,25 +8,45 @@ import akka.actor.{ ActorRef, ActorSystem }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
+import org.aalto.asia.requests._
+import org.aalto.asia.types._
+import org.json4s._
+import org.json4s.JsonDSL._
+import de.heikoseeberger.akkahttpjson4s.Json4sSupport
+import org.json4s.{ DefaultFormats, Formats }
+import org.json4s._
+import org.json4s.native
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.{ read, write }
+import database._
 
-//#main-class
-object QuickstartServer extends App with AuthRoutes {
+object QuickstartServer extends App with AuthRoutes with JsonSupport {
 
+  override implicit val serialization = native.Serialization
+  override implicit val json4sFormats: Formats = DefaultFormats + new PathSerializer
+
+  val addUser = AddUser("Tester1")
+  val addGroup = AddGroup("Testers")
+  val joinGroups = JoinGroups("Tester1", Set("Testers"))
+  val setDefault = SetRules("DEFAULT", Vector(Rule(Path("Objects/"), Read(), true), Rule(Path("Objects/"), WriteCallDelete(), false)))
+  val leaveGroups = LeaveGroups("Tester1", Set("Testers"))
+  val removeUser = RemoveUser("Tester1")
+  val removeGroup = RemoveGroup("Testers")
+
+  println(write(addUser))
+  println(write(addGroup))
+  println(write(joinGroups))
+  println(write(setDefault))
+  println(write(leaveGroups))
+  println(write(removeUser))
+  println(write(removeGroup))
   // set up ActorSystem and other dependencies here
-  //#main-class
-  //#server-bootstrapping
   implicit val system: ActorSystem = ActorSystem("O-MI-Authorization-Server")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
-  //#server-bootstrapping
+  implicit val authDB = new AuthorizationDB()
 
-  //#http-server
   Http().bindAndHandle(routes, "localhost", 8080)
-
   println(s"Server online at http://localhost:8080/")
 
   Await.result(system.whenTerminated, Duration.Inf)
-  //#http-server
-  //#main-class
 }
-//#main-class
-//#quick-start-server
