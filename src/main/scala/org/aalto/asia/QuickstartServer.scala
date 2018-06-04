@@ -27,6 +27,7 @@ object QuickstartServer extends App with AuthRoutes with JsonSupport {
   val removeUser = RemoveUser("Tester1")
   val removeGroup = RemoveGroup("Testers")
 
+  println("API JSON STRUCTURES:")
   println(write(addUser))
   println(write(addGroup))
   println(write(joinGroups))
@@ -35,13 +36,16 @@ object QuickstartServer extends App with AuthRoutes with JsonSupport {
   println(write(leaveGroups))
   println(write(removeUser))
   println(write(removeGroup))
+  println()
   // set up ActorSystem and other dependencies here
   implicit val system: ActorSystem = ActorSystem("O-MI-Authorization-Server")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val authDB = new AuthorizationDB()
 
-  Http().bindAndHandle(routes, "localhost", 8080)
-  println(s"Server online at http://localhost:8080/")
+  val interface = "localhost"
+  val port = 8001
+  Http().bindAndHandle(routes, interface, port)
+  println(s"Server online at http://$interface:$port/")
 
   Await.result(system.whenTerminated, Duration.Inf)
 }
