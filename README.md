@@ -8,10 +8,6 @@ This service needs one form of authentication that should be configured in some 
 Configuration
 --------------
 
-### DB
-
-Slick configuration in application.conf
-
 ### O-MI Node
 
 Set `omi-service.authAPI.v2.authorization-url`:
@@ -20,12 +16,16 @@ Set `omi-service.authAPI.v2.authorization-url`:
     enable = true
 
     # Url to do authentication (checking if the consumer have valid credentials or session)
-    authentication-url = "<set for authentication>"
+    authentication.url = "<set for authentication>"
 
     # Url to do authorization (checking what data a given user has permissions to read or write)
-    authorization-url = "http://localhost:8001/auth"
+    authorization.url = "http://localhost:8001/auth"
   }
 ```
+
+### DB
+
+TODO: Slick configuration in application.conf
 
 Compiling
 ----------

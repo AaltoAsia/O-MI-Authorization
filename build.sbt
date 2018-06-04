@@ -13,4 +13,5 @@ lazy val root = (project in file(".")).
   )
 enablePlugins(JavaServerAppPackaging)
 enablePlugins(UniversalPlugin)
+enablePlugins(LinuxPlugin)
 
