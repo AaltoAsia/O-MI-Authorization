@@ -1,5 +1,4 @@
 import Dependencies._
-
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
@@ -12,3 +11,6 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= scala_test_dependencies,
     libraryDependencies ++= slick_dependencies
   )
+enablePlugins(JavaServerAppPackaging)
+enablePlugins(UniversalPlugin)
+
