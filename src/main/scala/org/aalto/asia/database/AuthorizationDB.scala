@@ -73,9 +73,27 @@ class AuthorizationDB(
             }
         }
     }
-    db.run(actions)
+    Await.ready(db.run(actions).flatMap {
+      _ =>
+        db.run(
+          currentTableNames.map {
+            tableNames: Seq[String] =>
+              val notCreated = expectedTables.filterNot {
+                name: String => tableNames.contains(name)
+              }
+              if (notCreated.nonEmpty)
+                log.error(s"Could not create following tables: $notCreated")
+              else log.info(s"DB successfully initialised")
+          })
+    }, 1.minutes)
   }
   initialise()
+  def logGroups: Future[Unit] = {
+    db.run(groupsTable.result.map {
+      groups =>
+        log.info(s"Found following groups from DB:\n${groups.mkString("\n")}")
+    })
+  }
 
   def logMembers: Future[Unit] = {
     db.run(membersTable.result.map {
@@ -90,10 +108,11 @@ class AuthorizationDB(
     })
   }
   def userRulesForRequest(username: String, request: Request): Future[PermissionResult] = {
-    logMembers.flatMap(_ =>
-      logRules.flatMap(
-        _ =>
-          db.run(queryUserRulesForRequest(username, request))))
+    logGroups.flatMap(_ =>
+      logMembers.flatMap(_ =>
+        logRules.flatMap(
+          _ =>
+            db.run(queryUserRulesForRequest(username, request)))))
   }
 
   def newUser(username: String): Future[Unit] = {
@@ -186,6 +205,23 @@ class AuthorizationDB(
     }
     db.run(action).map(_ => Unit)
   }
+  def removeRules(groupname: String, rules: Seq[RRule]): Future[Unit] = {
+    val action = groupsTable.filter { row => row.name === groupname }.map(_.groupId).result.flatMap {
+      groupIds: Seq[Long] =>
+        groupIds.headOption match {
+          case Some(groupId) =>
+            DBIO.sequence(rules.map {
+              case RRule(path, allow) =>
+                rulesTable.filter {
+                  rule => rule.groupId === groupId && rule.path === path && rule.allow === allow
+                }.delete
+            }.toSeq)
+          case None =>
+            slick.dbio.DBIOAction.failed(new Exception(s"Unknown group named $groupname"))
+        }
+    }
+    db.run(action).map { _ => Unit }
+  }
 
   def setRulesForPaths(groupname: String, pathRules: Seq[Rule]): Future[Unit] = {
     val action = groupsTable.filter { row => row.name === groupname }.map(_.groupId).result.flatMap {
@@ -211,7 +247,7 @@ class AuthorizationDB(
             }
             DBIO.sequence(insertOrUpdates)
           case None =>
-            slick.dbio.DBIOAction.failed(new Exception(s"Unknown role named $groupname"))
+            slick.dbio.DBIOAction.failed(new Exception(s"Unknown group named $groupname"))
         }
     }
     db.run(action).map { _ => Unit }

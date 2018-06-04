@@ -74,9 +74,10 @@ case class Rule(path: Path, request: Request, allow: Boolean)
 case class SetRules(
   val group: String,
   val rules: Seq[Rule])
-case class RemoveRule(
+case class RRule(path: Path, allow: Boolean)
+case class RemoveRules(
   val group: String,
-  val path: Path)
+  val rules: Seq[RRule])
 
 case class AddUser(val username: String)
 case class RemoveUser(val username: String)

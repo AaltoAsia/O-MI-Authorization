@@ -76,7 +76,7 @@ trait AuthorizationTables extends DBBase {
 
   class UsersTable(tag: Tag) extends Table[UserEntry](tag, "USERS") {
     def userId: Rep[Long] = column[Long]("USER_ID", O.PrimaryKey, O.AutoInc)
-    def name: Rep[String] = column[String]("NAME")
+    def name: Rep[String] = column[String]("NAME", O.Unique)
 
     def nameIndex = index("NAME_INDEX", name, unique = true)
 
@@ -88,7 +88,7 @@ trait AuthorizationTables extends DBBase {
 
   class GroupsTable(tag: Tag) extends Table[GroupEntry](tag, "GROUPS") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID", O.PrimaryKey, O.AutoInc)
-    def name: Rep[String] = column[String]("NAME")
+    def name: Rep[String] = column[String]("NAME", O.Unique)
 
     def nameIndex = index("NAME_INDEX", name, unique = true)
 
@@ -179,17 +179,17 @@ trait AuthorizationTables extends DBBase {
             val deniedPaths: Set[Path] = denies.groupBy(_.groupId).mapValues {
               rules: Seq[RuleEntry] =>
                 rules.map(_.path).toSet
-            }.values.fold(Set.empty[Path]) {
+            }.values.reduceOption[Set[Path]] {
               case (result: Set[Path], r: Set[Path]) =>
                 result.toSet intersect r.toSet
-            }
+            }.getOrElse(Set.empty[Path])
             val allowedPaths: Set[Path] = allows.groupBy(_.groupId).mapValues {
               rules: Seq[RuleEntry] =>
                 rules.map(_.path).toSet
-            }.values.fold(Set.empty[Path]) {
+            }.values.reduceOption[Set[Path]] {
               case (result: Set[Path], r: Set[Path]) =>
-                result.toSet ++ r.toSet
-            }
+                result ++ r
+            }.getOrElse(Set.empty[Path])
             PermissionResult(allowedPaths, deniedPaths)
         }
 

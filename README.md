@@ -36,4 +36,27 @@ Compiling
   - Run: `sbt run`
   - Package: `sbt universal:packageBin` (zip) **or** `sbt universal:packageZipTarball` (tar)
 
+Known issues
+------------
 
+Sometimes all tables are not created.
+
+Example usage
+-------------
+`http POST :8001/add-user username=Tester1`
+
+`http POST :8001/add-group groupname=Testers`
+
+`http POST :8001/join-groups username=Tester1 groups:='["Testers"]'`
+
+`http POST :8001/set-rules group=Testers rules:='[{"path":"Objects","request":"r","allow":true},{"path":"Objects","request":"wcd","allow":false}]'`
+
+`http POST :8001/get-permissions username=Tester1 request=r`
+
+`http POST :8001/remove-rules group=Testers rules:='[{"path":"Objects","allow":true}]'` 
+
+`http POST :8001/leave-groups username=Tester1 groups:='["Testers"]'`
+
+`http POST :8001/remove-group groupname=Testers`
+
+`http POST :8001/remove-user username=Tester1`

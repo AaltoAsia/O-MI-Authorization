@@ -31,9 +31,9 @@ trait AuthRoutes extends JsonSupport {
   // Required by the `ask` (?) method below
   implicit lazy val timeout = Timeout(5.seconds) // usually we'd obtain the timeout from the system's configuration
 
-  //TODO: rename path
-  lazy val authRoute = path("auth") {
-    post {
+
+  lazy val routes = post {
+    path("get-permissions") {
       entity(as[GetPermissions]) { pr =>
         val permissions: Future[PermissionResult] = authDB.userRulesForRequest(pr.username, pr.request)
         permissions.onFailure {
@@ -42,11 +42,7 @@ trait AuthRoutes extends JsonSupport {
         }
         complete(permissions)
       }
-    }
-  }
-
-  lazy val mngRoute = post {
-    path("add-user") {
+    } ~ path("add-user") {
       entity(as[AddUser]) { ar: AddUser =>
         val result: Future[Unit] = authDB.newUser(ar.username)
         complete(result)
@@ -81,8 +77,13 @@ trait AuthRoutes extends JsonSupport {
         val result: Future[Unit] = authDB.setRulesForPaths(ar.group, ar.rules)
         complete(result)
       }
+    } ~ path("remove-rules") {
+      entity(as[RemoveRules]) { ar: RemoveRules =>
+        val result: Future[Unit] = authDB.removeRules(ar.group, ar.rules)
+        complete(result)
+      }
     }
+
   }
 
-  val routes = mngRoute ~ authRoute
 }
