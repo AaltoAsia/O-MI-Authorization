@@ -63,7 +63,7 @@ case class ReadWriteCallDelete() extends Request {
 import RequestType._
 case class GetPermissions(
   val username: String,
-  val requestType: RequestType //Read,Call,Write,Delete
+  val request: Request //Read,Call,Write,Delete
 )
 
 case class PermissionResult(

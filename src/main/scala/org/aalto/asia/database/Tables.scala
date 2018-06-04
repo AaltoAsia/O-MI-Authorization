@@ -5,6 +5,7 @@ import java.sql.Timestamp
 
 import scala.util.{ Try, Success, Failure }
 
+import akka.event.{ LoggingAdapter, Logging }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
@@ -60,6 +61,7 @@ trait AuthorizationTables extends DBBase {
   import dc.driver.api._
   import dc.driver.api.DBIOAction
 
+  def log: LoggingAdapter
   type DBSIOro[Result] = DBIOAction[Seq[Result], Streaming[Result], Effect.Read]
   type DBIOro[Result] = DBIOAction[Result, NoStream, Effect.Read]
   type DBIOwo[Result] = DBIOAction[Result, NoStream, Effect.Write]
@@ -157,43 +159,40 @@ trait AuthorizationTables extends DBBase {
           }
       }
     }
-    val allGroups: DBIOro[Set[Long]] = groups.result.flatMap {
+    val allGroups: DBIOro[Set[Long]] = groups.result.map(_.toSet) /*.flatMap {
       groupIds: Seq[Long] =>
         tmp(groupIds.toSet)
-    }
+    }*/
     val action = allGroups.flatMap {
       groupIds: Set[Long] =>
+        log.info(s"Found following group ids for $username: $groupIds")
         rulesTable.filter {
           row =>
             row.groupId inSet (groupIds)
         }.filter {
           row =>
             row.request like (s"%${request.toString}%")
-        }.groupBy(_.allow).result.flatMap {
-          tuples =>
-            val (denies, allows) = tuples.map {
-              case (b, s) =>
-                (b, s.result.map {
-                  rules: Seq[RuleEntry] => rules.map(_.path)
-                })
-            }.partition { case (b, _) => b }
-            DBIO.fold(denies.map(_._2), Seq.empty[Path]) {
-              case (result: Seq[Path], r: Seq[Path]) =>
-                (result.toSet intersect r.toSet).toSeq
-            }.flatMap {
-              deniedPaths: Seq[Path] =>
-                DBIO.fold(allows.map(_._2), Seq.empty[Path]) {
-                  case (result: Seq[Path], r: Seq[Path]) =>
-                    result ++ r
-                }.map {
-                  allowedPaths: Seq[Path] =>
-                    PermissionResult(
-                      allowedPaths.toSet,
-                      deniedPaths.toSet)
-                }
+        }.result.map {
+          rules: Seq[RuleEntry] =>
+            log.info(s"Got following rules for $username: $rules")
+            val (allows, denies) = rules.partition(_.allow)
+            val deniedPaths: Set[Path] = denies.groupBy(_.groupId).mapValues {
+              rules: Seq[RuleEntry] =>
+                rules.map(_.path).toSet
+            }.values.fold(Set.empty[Path]) {
+              case (result: Set[Path], r: Set[Path]) =>
+                result.toSet intersect r.toSet
             }
-
+            val allowedPaths: Set[Path] = allows.groupBy(_.groupId).mapValues {
+              rules: Seq[RuleEntry] =>
+                rules.map(_.path).toSet
+            }.values.fold(Set.empty[Path]) {
+              case (result: Set[Path], r: Set[Path]) =>
+                result.toSet ++ r.toSet
+            }
+            PermissionResult(allowedPaths, deniedPaths)
         }
+
     }
     action
   }

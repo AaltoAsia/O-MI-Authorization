@@ -39,6 +39,7 @@ object Dependencies {
     h2,
     postgres,
     json4s,
+    logback,
     json4sAkka
   )
 }

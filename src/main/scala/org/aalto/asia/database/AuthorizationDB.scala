@@ -7,6 +7,7 @@ import scala.util.{ Try, Success, Failure }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import akka.event.Logging
 import scala.concurrent.{ Await, Future }
 import scala.collection.mutable.{ Map => MutableMap, HashMap => MutableHashMap }
 import scala.collection.immutable.BitSet.BitSet1
@@ -34,27 +35,65 @@ class AuthorizationDB(
   import dc.driver.api._
   import dc.driver.api.DBIOAction
   val db: Database = dc.db
+  lazy val log = Logging(system, classOf[AuthorizationDB])
+
+  def currentTableNames: DBIOro[Vector[String]] = MTable.getTables.map {
+    mts =>
+      mts.map {
+        mt => mt.name.name
+      }
+  }
 
   def initialise(): Unit = {
-    val expected = Set("DEFAULT", "ADMIN")
-    val actions = groupsTable.filter(group => group.name inSet (expected)).result.flatMap {
-      foundGroups: Seq[GroupEntry] =>
-        val entries = expected.filter(!foundGroups.contains(_)).map {
-          groupName => GroupEntry(None, groupName)
+    val expectedGroups = Set("DEFAULT", "ADMIN")
+    val expectedTables = Set("USERS", "GROUPS", "MEMBERS", "RULES")
+    val actions = currentTableNames.flatMap {
+      tableNames: Seq[String] =>
+        val tableCreations = expectedTables.filterNot {
+          name: String =>
+            tableNames.contains(name)
+        }.map {
+          case "USERS" => usersTable.schema.create
+          case "GROUPS" => groupsTable.schema.create
+          case "MEMBERS" => membersTable.schema.create
+          case "RULES" => rulesTable.schema.create
         }
-        if (entries.nonEmpty) {
-          groupsTable ++= entries
-        } else {
-          DBIO.successful(foundGroups.toSet)
+        DBIO.sequence(tableCreations.toSeq)
+    }.flatMap {
+      res =>
+        groupsTable.filter(group => group.name inSet (expectedGroups)).result.flatMap {
+          foundGroups: Seq[GroupEntry] =>
+            val entries = expectedGroups.filter(!foundGroups.contains(_)).map {
+              groupName => GroupEntry(None, groupName)
+            }
+            if (entries.nonEmpty) {
+              groupsTable ++= entries
+            } else {
+              DBIO.successful(foundGroups.toSet)
+            }
         }
     }
     db.run(actions)
   }
   initialise()
 
+  def logMembers: Future[Unit] = {
+    db.run(membersTable.result.map {
+      members =>
+        log.info(s"Found following members from DB:\n${members.mkString("\n")}")
+    })
+  }
+  def logRules: Future[Unit] = {
+    db.run(rulesTable.result.map {
+      rules =>
+        log.info(s"Found following rules from DB:\n${rules.mkString("\n")}")
+    })
+  }
   def userRulesForRequest(username: String, request: Request): Future[PermissionResult] = {
-    //TODO: How to make group hierachy affect permissions
-    db.run(queryUserRulesForRequest(username, request))
+    logMembers.flatMap(_ =>
+      logRules.flatMap(
+        _ =>
+          db.run(queryUserRulesForRequest(username, request))))
   }
 
   def newUser(username: String): Future[Unit] = {

@@ -13,7 +13,7 @@ import org.aalto.asia.types._
 import org.json4s._
 import org.json4s.JsonDSL._
 import org.json4s.native.Serialization
-import org.json4s.native.Serialization.write
+import org.json4s.native.Serialization.{ write, read }
 import database._
 
 object QuickstartServer extends App with AuthRoutes with JsonSupport {
@@ -22,7 +22,7 @@ object QuickstartServer extends App with AuthRoutes with JsonSupport {
   val addUser = AddUser("Tester1")
   val addGroup = AddGroup("Testers")
   val joinGroups = JoinGroups("Tester1", Set("Testers"))
-  val setDefault = SetRules("DEFAULT", Vector(Rule(Path("Objects/"), Read(), true), Rule(Path("Objects/"), WriteCallDelete(), false)))
+  val setDefault = SetRules("DEFAULT", Vector(Rule(Path("Objects", "Test"), Read(), true), Rule(Path("Objects"), WriteCallDelete(), false)))
   val leaveGroups = LeaveGroups("Tester1", Set("Testers"))
   val removeUser = RemoveUser("Tester1")
   val removeGroup = RemoveGroup("Testers")
@@ -31,6 +31,7 @@ object QuickstartServer extends App with AuthRoutes with JsonSupport {
   println(write(addGroup))
   println(write(joinGroups))
   println(write(setDefault))
+  println(read[SetRules](write(setDefault)))
   println(write(leaveGroups))
   println(write(removeUser))
   println(write(removeGroup))

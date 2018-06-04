@@ -1,8 +1,9 @@
 package org.aalto.asia
 
 import akka.actor.{ ActorRef, ActorSystem }
-import akka.event.Logging
+import akka.event.{ LoggingAdapter, Logging }
 
+import scala.util.control.NonFatal
 import scala.concurrent.duration._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes
@@ -21,8 +22,9 @@ import org.aalto.asia.requests._
 
 trait AuthRoutes extends JsonSupport {
 
-  implicit def system: ActorSystem
+  implicit val system: ActorSystem
   val authDB: AuthorizationDB
+  import system.dispatcher
 
   lazy val log = Logging(system, classOf[AuthRoutes])
 
@@ -33,7 +35,11 @@ trait AuthRoutes extends JsonSupport {
   lazy val authRoute = path("auth") {
     post {
       entity(as[GetPermissions]) { pr =>
-        val permissions: Future[PermissionResult] = authDB.userRulesForRequest(pr.username, Request(pr.requestType))
+        val permissions: Future[PermissionResult] = authDB.userRulesForRequest(pr.username, pr.request)
+        permissions.onFailure {
+          case t: Throwable =>
+            log.error(t.getMessage)
+        }
         complete(permissions)
       }
     }
