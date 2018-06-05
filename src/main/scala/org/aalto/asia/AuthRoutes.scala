@@ -31,7 +31,6 @@ trait AuthRoutes extends JsonSupport {
   // Required by the `ask` (?) method below
   implicit lazy val timeout = Timeout(5.seconds) // usually we'd obtain the timeout from the system's configuration
 
-
   lazy val routes = post {
     path("get-permissions") {
       entity(as[GetPermissions]) { pr =>

@@ -181,7 +181,19 @@ trait AuthorizationTables extends DBBase {
                 rules.map(_.path).toSet
             }.values.reduceOption[Set[Path]] {
               case (result: Set[Path], r: Set[Path]) =>
-                result.toSet intersect r.toSet
+                r.filter {
+                  path =>
+                    result.contains(path) &&
+                      result.exists {
+                        op => op.isAncestorOf(path)
+                      }
+                } ++ result.filter {
+                  path =>
+                    r.contains(path) &&
+                      r.exists {
+                        op => op.isAncestorOf(path)
+                      }
+                }
             }.getOrElse(Set.empty[Path])
             val allowedPaths: Set[Path] = allows.groupBy(_.groupId).mapValues {
               rules: Seq[RuleEntry] =>
