@@ -73,7 +73,7 @@ class AuthorizationDB(
             }
         }
     }
-    Await.ready(db.run(actions).flatMap {
+    val future = db.run(actions).flatMap {
       _ =>
         db.run(
           currentTableNames.map {
@@ -84,10 +84,17 @@ class AuthorizationDB(
               if (notCreated.nonEmpty)
                 log.error(s"Could not create following tables: $notCreated")
               else log.info(s"DB successfully initialised")
-          })
-    }, 1.minutes)
+          }).flatMap(_ => logGroups)
+    }
+    future.onFailure {
+      case t: Exception =>
+        log.error(t.getMessage)
+    }
+    Await.ready(future, 1.minutes)
   }
+
   initialise()
+
   def logGroups: Future[Unit] = {
     db.run(groupsTable.result.map {
       groups =>
@@ -121,7 +128,19 @@ class AuthorizationDB(
     val createUserGroup = { groupsTable += GroupEntry(None, groupname) }
 
     val action = DBIO.sequence(Vector(createUser, createUserGroup)).flatMap {
-      res => joinGroupsAction(username, Set(groupname, "DEFAULT"))
+      res =>
+        groupsTable.result.map {
+          groups =>
+            log.info(s"Found following groups from DB:\n${groups.mkString("\n")}")
+        }.flatMap {
+          _ =>
+            membersTable.result.map {
+              members =>
+                log.info(s"Found following members from DB:\n${members.mkString("\n")}")
+            }.flatMap {
+              _ => joinGroupsAction(username, Set(groupname, "DEFAULT"))
+            }
+        }
     }
     db.run(action).map(_ => Unit)
   }

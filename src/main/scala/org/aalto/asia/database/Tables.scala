@@ -35,7 +35,7 @@ case class RuleEntry(
 case class UserEntry(
   val id: Option[Long],
   val name: String) {
-  val groupName = s"${name}_GROUP"
+  val groupName = s"${name}_USERGROUP"
 }
 
 case class GroupEntry(
@@ -78,7 +78,7 @@ trait AuthorizationTables extends DBBase {
     def userId: Rep[Long] = column[Long]("USER_ID", O.PrimaryKey, O.AutoInc)
     def name: Rep[String] = column[String]("NAME", O.Unique)
 
-    def nameIndex = index("NAME_INDEX", name, unique = true)
+    def nameIndex = index("USERNAME_INDEX", name, unique = true)
 
     def * = (userId?, name) <> (UserEntry.tupled, UserEntry.unapply)
   }
@@ -90,7 +90,7 @@ trait AuthorizationTables extends DBBase {
     def groupId: Rep[Long] = column[Long]("GROUP_ID", O.PrimaryKey, O.AutoInc)
     def name: Rep[String] = column[String]("NAME", O.Unique)
 
-    def nameIndex = index("NAME_INDEX", name, unique = true)
+    def nameIndex = index("GROUPNAME_INDEX", name, unique = true)
 
     def * = (groupId?, name) <> (GroupEntry.tupled, GroupEntry.unapply)
   }
@@ -101,8 +101,8 @@ trait AuthorizationTables extends DBBase {
   class MembersTable(tag: Tag) extends Table[MemberEntry](tag, "MEMBERS") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID")
     def userId: Rep[Long] = column[Long]("USER_ID")
-    def userIndex = index("USER_INDEX", userId, unique = false)
-    def groupIndex = index("GROUP_INDEX", groupId, unique = false)
+    def userIndex = index("MEMBERS_USER_INDEX", userId, unique = false)
+    def groupIndex = index("MEMBERS_GROUP_INDEX", groupId, unique = false)
     def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
     def usersFK = foreignKey("USER_FK", userId, usersTable)(_.userId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
     def * = (groupId, userId) <> (MemberEntry.tupled, MemberEntry.unapply)
@@ -113,8 +113,8 @@ trait AuthorizationTables extends DBBase {
   class SubGroupsTable(tag: Tag) extends Table[SubGroupEntry](tag, "SUBGROUPS") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID")
     def subGroupId: Rep[Long] = column[Long]("SUB_GROUP_ID")
-    def subGroupIndex = index("SUB_GROUP_INDEX", subGroupId, unique = false)
-    def groupIndex = index("GROUP_INDEX", groupId, unique = false)
+    def subGroupIndex = index("SUBG_SUBGROUP_INDEX", subGroupId, unique = false)
+    def groupIndex = index("SUBG_GROUP_INDEX", groupId, unique = false)
     def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
     def subgroupsFK = foreignKey("SUBGROUP_FK", subGroupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
     def * = (groupId, subGroupId) <> (SubGroupEntry.tupled, SubGroupEntry.unapply)
@@ -128,8 +128,8 @@ trait AuthorizationTables extends DBBase {
     def path: Rep[Path] = column[Path]("PATH")
     def allow: Rep[Boolean] = column[Boolean]("ALLOW_OR_DENY")
 
-    def groupIndex = index("GROUP_INDEX", groupId, unique = false)
-    def groupRequestIndex = index("GROUP_REQUEST_INDEX", (groupId, request), unique = false)
+    def groupIndex = index("RULES_GROUP_INDEX", groupId, unique = false)
+    def groupRequestIndex = index("RULES_GROUP_REQUEST_INDEX", (groupId, request), unique = false)
 
     def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
     def * = (groupId, request, allow, path) <> (RuleEntry.tupled, RuleEntry.unapply)
@@ -216,6 +216,7 @@ trait AuthorizationTables extends DBBase {
     } yield (group.groupId, user.userId)
     val action = crossJoin.result.flatMap {
       tuples =>
+        log.info(tuples.mkString("\n"))
         val entries = tuples.map {
           case (gid, uid) => MemberEntry(gid, uid)
         }
