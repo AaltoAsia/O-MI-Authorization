@@ -10,7 +10,9 @@ Configuration
 
 ### O-MI Node
 
-Set `omi-service.authAPI.v2.authorization-url`:
+
+1. For now you need to compile O-MI Node from `feature_authapiv2` branch in O-MI Node (It will be released in near-future release).
+2. Set `omi-service.authAPI.v2.authorization-url`:
 ```
   authAPI.v2 {
     enable = true
@@ -23,9 +25,10 @@ Set `omi-service.authAPI.v2.authorization-url`:
   }
 ```
 
-### DB
+### Authorization module
 
-TODO: Slick configuration in application.conf
+See configuration file `application.conf`.
+
 
 Compiling
 ----------
