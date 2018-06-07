@@ -19,7 +19,7 @@ Set `omi-service.authAPI.v2.authorization-url`:
     authentication.url = "<set for authentication>"
 
     # Url to do authorization (checking what data a given user has permissions to read or write)
-    authorization.url = "http://localhost:8001/auth"
+    authorization.url = "http://localhost:8001/get-permissions"
   }
 ```
 
@@ -43,6 +43,9 @@ Sometimes all tables are not created.
 
 Example usage
 -------------
+
+Examples with [httpie](https://httpie.org/doc) program
+
 `http POST :8001/add-user username=Tester1`
 
 `http POST :8001/add-group groupname=Testers`
