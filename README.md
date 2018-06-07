@@ -2,7 +2,7 @@ O-MI Authorization Service
 ==========================
 
 Standalone server that implements O-MI Node reference implementation authorization protocol v2.
-This service needs one form of authentication that should be configured in some other service, as explained in the guide.
+This service needs one form of authentication that should be configured in some other service.
 
 
 Configuration
