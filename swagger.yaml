@@ -1,0 +1,250 @@
+swagger: "2.0"
+info:
+  description: "This is [O-MI Authorization](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/README.md) reference implementation REST API."
+  version: "1.0.0"
+  title: "O-MI Authorization"
+  #contact:
+  #  email: ""
+  #license:
+  #  name: ""
+  #  url: ""
+host: "localhost"
+basePath: "/v1"
+tags:
+- name: "Users"
+  description: "Operations about users."
+  #externalDocs:
+  #  description: "Find out more"
+  #  url: "http://swagger.io"
+- name: "Groups/Roles"
+  description: "Operations about groups."
+- name: "Rules"
+  description: "Operations about permission Rules."
+  
+consumes:
+  - application/json
+produces:
+  - application/json
+
+schemes:
+- "http"
+paths:
+  /add-user:
+    post:
+      tags:
+      - "Users"
+      summary: "add a new user"
+      description: ""
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Pet object that needs to be added to the store"
+        required: true
+        schema:
+          type: object
+          required:
+            - username
+          properties:
+            username:
+              type: string
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
+  /remove-user:
+    post:
+      tags:
+      - "Users"
+      summary: "remove user"
+      description: ""
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Pet object that needs to be added to the store"
+        required: true
+        schema:
+          type: object
+          required:
+            - username
+          properties:
+            username:
+              type: string
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
+  /add-group:
+    post:
+      tags:
+      - "Groups/Roles"
+      summary: "add a new group"
+      description: ""
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Pet object that needs to be added to the store"
+        required: true
+        schema:
+          type: object
+          required:
+            - groupname
+          properties:
+            groupname:
+              type: string
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
+  /remove-group:
+    post:
+      tags:
+      - "Groups/Roles"
+      summary: "remove group"
+      description: ""
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Pet object that needs to be added to the store"
+        required: true
+        schema:
+          type: object
+          required:
+            - groupname
+          properties:
+            groupname:
+              type: string
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
+  /join-groups:
+    post:
+      tags:
+      - "Groups/Roles"
+      summary: "add user to groups"
+      description: ""
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Pet object that needs to be added to the store"
+        required: true
+        schema:
+          type: object
+          required:
+            - username
+            - groups
+          properties:
+            username:
+              type: string
+            groups:
+              type: array
+              items:
+                type: string
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
+  /leave-groups:
+    post:
+      tags:
+      - "Groups/Roles"
+      summary: "remove user from groups"
+      description: ""
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Pet object that needs to be added to the store"
+        required: true
+        schema:
+          type: object
+          required:
+            - username
+            - groups
+          properties:
+            username:
+              type: string
+            groups:
+              type: array
+              items:
+                type: string
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
+          
+  /set-rules:
+    post:
+      tags:
+      - "Rules"
+      summary: "add a new user"
+      description: ""
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Pet object that needs to be added to the store"
+        required: true
+        schema:
+          type: object
+          required:
+            - groupname
+          properties:
+            groupname:
+              type: string
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
+  /remove-rules:
+    post:
+      tags:
+      - "Rules"
+      summary: "remove rules from given group"
+      description: ""
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Pet object that needs to be added to the store"
+        required: true
+        schema:
+          type: object
+          required:
+            - groupname
+            - rules
+          properties:
+            groupname:
+              type: string
+            rules:
+              type: array
+              items:
+                type: object
+                required:
+                  - path
+                  - allow
+                properties:
+                  path:
+                    type: string
+                  allow:
+                    type: boolean
+                #example: 
+                  #path: "Objects/MyObject/MyInfoItem"
+                  #allow: true
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
