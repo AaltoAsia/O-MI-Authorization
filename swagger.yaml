@@ -11,8 +11,8 @@ info:
 host: "localhost"
 basePath: "/v1"
 tags:
-- name: "Users"
-  description: "Operations about users."
+- name: "Consumers"
+  description: "Operations about consumers."
   #externalDocs:
   #  description: "Find out more"
   #  url: "http://swagger.io"
@@ -32,22 +32,22 @@ paths:
   /add-user:
     post:
       tags:
-      - "Users"
-      summary: "add a new user"
-      description: ""
+      - "Consumers"
+      summary: "Add a new consumer"
+      description: |
+        Consumer consist of an identifier, which called `username` in the code.
+        After adding, the consumer can be added to groups.
+
+        **Note:** The consumer is automatically added to a group named
+        `${username}_USERGROUP` and to the group `DEFAULT`.
 
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: "Parameters in json"
         required: true
         schema:
-          type: object
-          required:
-            - username
-          properties:
-            username:
-              type: string
+          $ref: "#/definitions/AddUser"
       responses:
         200:
           description: "OK"
@@ -56,22 +56,20 @@ paths:
   /remove-user:
     post:
       tags:
-      - "Users"
-      summary: "remove user"
-      description: ""
+      - "Consumers"
+      summary: "Remove a consumer"
+      description: |
+        Consumer can be removed from the system. This also removes group
+        `${username}_USERGROUP` and all other data that was connected to this
+        consumer only.
 
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: "Parameters in json"
         required: true
         schema:
-          type: object
-          required:
-            - username
-          properties:
-            username:
-              type: string
+          $ref: "#/definitions/RemoveUser"
       responses:
         200:
           description: "OK"
@@ -81,21 +79,23 @@ paths:
     post:
       tags:
       - "Groups/Roles"
-      summary: "add a new group"
-      description: ""
+      summary: "Add a new group/role"
+      description: |
+        Creates a new empty group/role.
+        A group can be connected to multiple consumers with
+        [join-groups](#operation--join-groups-post).  This system does not
+        impose any particular way of how to use groups. They can be thought as
+        roles instead. To understand how the permissions combine when belonging
+        to many groups, see
+        [get-permissions](#operation--get-permissions-post).
 
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: "Parameters in json"
         required: true
         schema:
-          type: object
-          required:
-            - groupname
-          properties:
-            groupname:
-              type: string
+          $ref: "#/definitions/AddGroup"
       responses:
         200:
           description: "OK"
@@ -105,21 +105,18 @@ paths:
     post:
       tags:
       - "Groups/Roles"
-      summary: "remove group"
-      description: ""
+      summary: "Remove group"
+      description: |
+        Removes the group and removes all data that was connected to the group,
+        including rules.
 
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: "Parameters in json"
         required: true
         schema:
-          type: object
-          required:
-            - groupname
-          properties:
-            groupname:
-              type: string
+          $ref: "#/definitions/RemoveGroup"
       responses:
         200:
           description: "OK"
@@ -129,26 +126,19 @@ paths:
     post:
       tags:
       - "Groups/Roles"
-      summary: "add user to groups"
-      description: ""
+      summary: "Add consumer to groups / assign roles"
+      description: |
+        Connects a consumer to one or more groups/roles.
 
+        To understand how the permissions combine when belonging to many
+        groups, see [get-permissions](#operation--get-permissions-post).
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: "Parameters in json"
         required: true
         schema:
-          type: object
-          required:
-            - username
-            - groups
-          properties:
-            username:
-              type: string
-            groups:
-              type: array
-              items:
-                type: string
+          $ref: "#/definitions/JoinGroups"
       responses:
         200:
           description: "OK"
@@ -158,26 +148,17 @@ paths:
     post:
       tags:
       - "Groups/Roles"
-      summary: "remove user from groups"
-      description: ""
+      summary: "Remove consumer from groups / unassign roles"
+      description: |
+        Removes a connection from a consumer to one or more groups/roles.
 
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: "Parameters in json"
         required: true
         schema:
-          type: object
-          required:
-            - username
-            - groups
-          properties:
-            username:
-              type: string
-            groups:
-              type: array
-              items:
-                type: string
+          $ref: "#/definitions/LeaveGroups"
       responses:
         200:
           description: "OK"
@@ -188,21 +169,23 @@ paths:
     post:
       tags:
       - "Rules"
-      summary: "add a new user"
-      description: ""
+      summary: "Set rules for group/role"
+      description: |
+        Set permission rules for a group/role. These are seperated in allow and
+        deny rules. In O-MI Node the rules are prosessed by first filtering the
+        incoming request by allow rules and then filtering with the deny rules from
+        the result.
+
+        To set rules for consumer, it either needs to be added to groups or the
+        automatic `username_USERGROUP` can be used.
 
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: "Parameters in json"
         required: true
         schema:
-          type: object
-          required:
-            - groupname
-          properties:
-            groupname:
-              type: string
+          $ref: "#/definitions/SetRules"
       responses:
         200:
           description: "OK"
@@ -212,39 +195,187 @@ paths:
     post:
       tags:
       - "Rules"
-      summary: "remove rules from given group"
+      summary: "Remove rules from group/role"
       description: ""
 
       parameters:
       - in: "body"
         name: "body"
-        description: "Pet object that needs to be added to the store"
+        description: "Parameters in json"
         required: true
         schema:
-          type: object
-          required:
-            - groupname
-            - rules
-          properties:
-            groupname:
-              type: string
-            rules:
-              type: array
-              items:
-                type: object
-                required:
-                  - path
-                  - allow
-                properties:
-                  path:
-                    type: string
-                  allow:
-                    type: boolean
-                #example: 
-                  #path: "Objects/MyObject/MyInfoItem"
-                  #allow: true
+          $ref: "#/definitions/RemoveRules"
       responses:
         200:
           description: "OK"
         400:
           description: "Invalid input"
+  /get-permissions:
+    post:
+      tags:
+      - "Rules"
+      summary: "Get rules of a consumer and a request type"
+      description: |
+        Permissions of a consumer for a request type. This operation should be
+        used by O-MI Node for authorization, meaning the result is compatible
+        with Authorization API service v2.
+
+        If the consumer has connections to many groups/roles (with
+        [join-groups](#operation--join-groups-post)) and they have many rules,
+        the rules are concatenated in the following way:
+        * allow rules are combined with set union
+        * deny rules are combined with set intersection
+
+        Hierarchical structure of the O-DF paths is taken into account when
+        doing these set operations. This way the consumer, belonging to a
+        certain group, can not lose any permissions in that group just by
+        joining other groups.
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: |
+          Parameters in json.
+        required: true
+        schema:
+          $ref: "#/definitions/GetPermissions"
+      responses:
+        200:
+          description: "Rules aggregated for given consumer and request"
+          schema:
+            $ref: "#/definitions/PermissionResult"
+        400:
+          description: "Invalid input"
+definitions:
+  Request:
+    type: string
+    enum: [r, w, c, d]
+    description: |
+      Select one or more requests:
+      * `r` for read request
+      * `w` for write request
+      * `c` for call request
+      * `d` for delete request
+
+      When setting new rules, many request types can be used by concatenating them.
+
+  GetPermissions:
+    description: >
+      Permissions of a consumer for a request type. This operation is used by O-MI Node 
+      for authorization.
+    type: object
+    required:
+      - username
+      - request
+    properties:
+      username: &username
+        type: string
+        description: "Consumer identifier to be used for this operation"
+      request:
+        $ref: "#/definitions/Request"
+
+  PermissionResult:
+    type: object 
+    reqired:
+      - allowed
+      - denied
+    properties:
+      allowed:
+        type: array 
+        items:
+          type: string 
+        description: "Paths that are allowed for the consumer."
+      denied: 
+        type: array 
+        items:
+          type: string 
+        description: "Paths that are disallowed for the consumer."
+
+  Rule:
+    type: object
+    required:
+      - path
+      - allow
+      - request
+    properties:
+      path: &path
+        type: string
+        description: "O-DF path in the format of `/Objects/MyObject/MyInfoItem`."
+      allow: &allow
+        type: boolean
+        description: "Set to `true` to make an allow rule or `false` to make a deny rule."
+      request:
+        $ref: "#/definitions/Request"
+
+  SetRules:
+    type: object
+    required:
+      - group
+      - rules
+    properties:
+      group:
+        type: string
+      rules:
+        type: array
+        items:
+          $ref: "#/definitions/Rule"
+
+  RRule:
+    type: object
+    required:
+      - path
+      - allow
+    properties:
+      path: *path
+      allow: *allow
+
+  RemoveRules:
+    type: object
+    required:
+      - group
+      - rules
+    properties:
+      group: &groupname
+        type: string
+        description: "Group/Role identifier to be used in this operation."
+      rules:
+        type: array
+        items:
+          $ref: "#/definitions/RRule"
+
+  AddUser:
+    type: object
+    required:
+      - username
+    properties:
+      username: *username
+
+  RemoveUser:
+    $ref: "#/definitions/AddUser"
+
+  AddGroup:
+    type: object
+    required:
+      - groupname
+    properties:
+      groupname: *groupname
+
+  RemoveGroup:
+    $ref: "#/definitions/AddGroup"
+
+  JoinGroups:
+    type: object
+    required:
+      - username
+      - groups
+    properties:
+      username: *username
+      groups:
+        type: array
+        items:
+          type: string
+        description: "List of group/role identifiers to be used in this operation."
+
+  LeaveGroups:
+    $ref: "#/definitions/JoinGroups"
+

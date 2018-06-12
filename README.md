@@ -19,7 +19,7 @@ Set `omi-service.authAPI.v2.authorization-url`:
     authentication.url = "<set for authentication>"
 
     # Url to do authorization (checking what data a given user has permissions to read or write)
-    authorization.url = "http://localhost:8001/get-permissions"
+    authorization.url = "http://localhost:8001/v1/get-permissions"
   }
 ```
 
