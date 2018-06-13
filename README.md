@@ -49,7 +49,7 @@ Api docs
 -------
 
 * [Html API docs](http://aaltoasia.github.io/O-MI-Authorization/)
-* [swagger.yml](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/swagger.yml)
+* [swagger.yaml](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/swagger.yaml)
 
 Example usage
 -------------
