@@ -49,27 +49,27 @@ Api docs
 -------
 
 * [Html API docs](http://aaltoasia.github.io/O-MI-Authorization/)
-* [swagger.yml](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/swagger.yml)
+* [swagger.yaml](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/swagger.yaml)
 
 Example usage
 -------------
 
 Examples with [httpie](https://httpie.org/doc) program
 
-`http POST :8001/add-user username=Tester1`
+`http POST :8001/v1/add-user username=Tester1`
 
-`http POST :8001/add-group groupname=Testers`
+`http POST :8001/v1/add-group groupname=Testers`
 
-`http POST :8001/join-groups username=Tester1 groups:='["Testers"]'`
+`http POST :8001/v1/join-groups username=Tester1 groups:='["Testers"]'`
 
-`http POST :8001/set-rules group=Testers rules:='[{"path":"Objects","request":"r","allow":true},{"path":"Objects","request":"wcd","allow":false}]'`
+`http POST :8001/v1/set-rules group=Testers rules:='[{"path":"Objects","request":"r","allow":true},{"path":"Objects","request":"wcd","allow":false}]'`
 
-`http POST :8001/get-permissions username=Tester1 request=r`
+`http POST :8001/v1/get-permissions username=Tester1 request=r`
 
-`http POST :8001/remove-rules group=Testers rules:='[{"path":"Objects","allow":true}]'` 
+`http POST :8001/v1/remove-rules group=Testers rules:='[{"path":"Objects","allow":true}]'` 
 
-`http POST :8001/leave-groups username=Tester1 groups:='["Testers"]'`
+`http POST :8001/v1/leave-groups username=Tester1 groups:='["Testers"]'`
 
-`http POST :8001/remove-group groupname=Testers`
+`http POST :8001/v1/remove-group groupname=Testers`
 
-`http POST :8001/remove-user username=Tester1`
+`http POST :8001/v1/remove-user username=Tester1`
