@@ -13,9 +13,9 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/omi.log</file>
+        <file>logs/omi-authorization.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>logs\omi.%i.log</fileNamePattern>
+            <fileNamePattern>logs\omi-authorization.%i.log</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>4</maxIndex>
         </rollingPolicy>
