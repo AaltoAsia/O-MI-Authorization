@@ -12,16 +12,30 @@ Configuration
 
 
 1. For now you need to compile O-MI Node from `feature_authapiv2` branch in O-MI Node (It will be released in near-future release).
-2. Set `omi-service.authAPI.v2.authorization-url`:
+2. In `application.conf`, set `omi-service.authAPI.v2.authorization-url` to and parameter object as below:
 ```
-  authAPI.v2 {
+# This example is at root level, outside of any objects
+omi-service.authAPI.v2 {
     enable = true
 
     # Url to do authentication (checking if the consumer have valid credentials or session)
-    authentication.url = "<set for authentication>"
+    #authentication.url = "<set for authentication>"
 
     # Url to do authorization (checking what data a given user has permissions to read or write)
     authorization.url = "http://localhost:8001/v1/get-permissions"
+    
+    # predefined variables: requestType and requestTypeLetter which tell O-MI verb name (read, write, call, delete)
+    # for O-MI Authorization ref. impl: http POST {"username": <username>, "request": <first-character-of-omi-request-type>}
+    parameters.toAuthorization {
+      # authorizationHeader {}
+      # headers {}
+      jsonbody {
+        # jsonproperty = variableName
+        username = "username"
+        request = "requestTypeChar"
+      }
+    }
+
   }
 ```
 
