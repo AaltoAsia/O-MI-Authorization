@@ -35,6 +35,7 @@
 
 
 <!-- Possible to edit levels of different loggers INFO level is currently set using filter
+-->
     <logger name="akka" level="INFO" />
     <logger name="slick" level="INFO" />
     <logger name="com.zaxxer.hikari" level="INFO" />
@@ -44,8 +45,7 @@
     <logger name="akka.io.TcpListener" level="INFO" />
 
     <logger name="database" level="DEBUG" />
--->
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ASYNC"/>
     </root>

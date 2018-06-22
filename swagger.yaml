@@ -250,6 +250,7 @@ definitions:
   Request:
     type: string
     enum: [r, w, c, d]
+    example: "w"
     description: |
       Select one or more requests:
       * `r` for read request
@@ -270,6 +271,7 @@ definitions:
     properties:
       username: &username
         type: string
+        example: "Alice"
         description: "Consumer identifier to be used for this operation"
       request:
         $ref: "#/definitions/Request"
@@ -282,13 +284,14 @@ definitions:
     properties:
       allowed:
         type: array 
-        items:
+        items: &path
           type: string 
+          description: "O-DF path in the slash format `/Objects/MyObject/MyInfoItem`."
+          example: "/Objects/MyObject/MyInfoItem"
         description: "Paths that are allowed for the consumer."
       denied: 
         type: array 
-        items:
-          type: string 
+        items: *path
         description: "Paths that are disallowed for the consumer."
 
   Rule:
@@ -298,11 +301,10 @@ definitions:
       - allow
       - request
     properties:
-      path: &path
-        type: string
-        description: "O-DF path in the format of `/Objects/MyObject/MyInfoItem`."
+      path: *path
       allow: &allow
         type: boolean
+        example: true
         description: "Set to `true` to make an allow rule or `false` to make a deny rule."
       request:
         $ref: "#/definitions/Request"
@@ -313,8 +315,10 @@ definitions:
       - group
       - rules
     properties:
-      group:
+      group: &groupname
         type: string
+        description: "Group/Role identifier to be used in this operation."
+        example: "Administrators"
       rules:
         type: array
         items:
@@ -335,9 +339,7 @@ definitions:
       - group
       - rules
     properties:
-      group: &groupname
-        type: string
-        description: "Group/Role identifier to be used in this operation."
+      group: *groupname
       rules:
         type: array
         items:
@@ -372,8 +374,7 @@ definitions:
       username: *username
       groups:
         type: array
-        items:
-          type: string
+        items: *groupname
         description: "List of group/role identifiers to be used in this operation."
 
   LeaveGroups:

@@ -172,7 +172,7 @@
                 <section>
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -253,7 +253,7 @@
                 <section>
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -342,7 +342,7 @@
                 <section>
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -423,7 +423,7 @@
                 <section>
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -506,9 +506,9 @@
                 <section>
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>,
   <span class="hljs-attr">&quot;groups&quot;</span>: [
-    <span class="hljs-string">&quot;string&quot;</span>
+    <span class="hljs-string">&quot;Administrators&quot;</span>
   ]
 }
 </code></pre>
@@ -590,9 +590,9 @@
                 <section>
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>,
   <span class="hljs-attr">&quot;groups&quot;</span>: [
-    <span class="hljs-string">&quot;string&quot;</span>
+    <span class="hljs-string">&quot;Administrators&quot;</span>
   ]
 }
 </code></pre>
@@ -681,12 +681,12 @@
                 <section>
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+  <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>,
   <span class="hljs-attr">&quot;rules&quot;</span>: [
     {
-      <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-      <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>,
-      <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+      <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
+      <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;w&quot;</span>
     }
   ]
 }
@@ -762,11 +762,11 @@
                 <section>
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+  <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>,
   <span class="hljs-attr">&quot;rules&quot;</span>: [
     {
-      <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-      <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>
+      <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
+      <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>
     }
   ]
 }
@@ -856,8 +856,8 @@
                 <section>
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>,
+  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;w&quot;</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -898,10 +898,10 @@
                   </h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
   <span class="hljs-attr">&quot;allowed&quot;</span>: [
-    <span class="hljs-string">&quot;string&quot;</span>
+    <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>
   ],
   <span class="hljs-attr">&quot;denied&quot;</span>: [
-    <span class="hljs-string">&quot;string&quot;</span>
+    <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>
   ]
 }
 </code></pre>
@@ -990,8 +990,8 @@
                 <section>
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>,
+  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;w&quot;</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -1024,7 +1024,11 @@
                       <section class="json-schema-array-items">
                         <span class="json-property-type">string</span>
                         <span class="json-property-range" title="Value limits"></span>
-                        <div class="json-inner-schema"> </div>
+                        <div class="json-inner-schema">
+                          <section class="json-schema-description">
+                            <p>O-DF path in the slash format <code>/Objects/MyObject/MyInfoItem</code>.</p>
+                          </section>
+                        </div>
                       </section>
                     </dt>
                     <dt data-property-name="denied" class="has-description">
@@ -1039,7 +1043,11 @@
                       <section class="json-schema-array-items">
                         <span class="json-property-type">string</span>
                         <span class="json-property-range" title="Value limits"></span>
-                        <div class="json-inner-schema"> </div>
+                        <div class="json-inner-schema">
+                          <section class="json-schema-description">
+                            <p>O-DF path in the slash format <code>/Objects/MyObject/MyInfoItem</code>.</p>
+                          </section>
+                        </div>
                       </section>
                     </dt>
                   </dl>
@@ -1050,10 +1058,10 @@
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
   <span class="hljs-attr">&quot;allowed&quot;</span>: [
-    <span class="hljs-string">&quot;string&quot;</span>
+    <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>
   ],
   <span class="hljs-attr">&quot;denied&quot;</span>: [
-    <span class="hljs-string">&quot;string&quot;</span>
+    <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>
   ]
 }
 </code></pre>
@@ -1082,7 +1090,7 @@
                       <span class="json-property-required"></span>
                     </dt>
                     <dd>
-                      <p>O-DF path in the format of <code>/Objects/MyObject/MyInfoItem</code>.</p>
+                      <p>O-DF path in the slash format <code>/Objects/MyObject/MyInfoItem</code>.</p>
                     </dd>
                     <dt data-property-name="allow" class="has-description">
                       <span class="json-property-name">allow:</span>
@@ -1110,9 +1118,9 @@
                 <section>
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-  <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>,
-  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+  <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
+  <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;w&quot;</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -1133,12 +1141,15 @@
               <div class="doc-copy">
                 <section class="json-schema-properties">
                   <dl>
-                    <dt data-property-name="group">
+                    <dt data-property-name="group" class="has-description">
                       <span class="json-property-name">group:</span>
                       <span class="json-property-type">string</span>
                       <span class="json-property-range" title="Value limits"></span>
                       <span class="json-property-required"></span>
                     </dt>
+                    <dd>
+                      <p>Group/Role identifier to be used in this operation.</p>
+                    </dd>
                     <dt data-property-name="rules">
                       <span class="json-property-name">rules:</span>
                       <span class="json-property-type">
@@ -1167,12 +1178,12 @@
                 <section>
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+  <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>,
   <span class="hljs-attr">&quot;rules&quot;</span>: [
     {
-      <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-      <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>,
-      <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+      <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
+      <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;w&quot;</span>
     }
   ]
 }
@@ -1202,7 +1213,7 @@
                       <span class="json-property-required"></span>
                     </dt>
                     <dd>
-                      <p>O-DF path in the format of <code>/Objects/MyObject/MyInfoItem</code>.</p>
+                      <p>O-DF path in the slash format <code>/Objects/MyObject/MyInfoItem</code>.</p>
                     </dd>
                     <dt data-property-name="allow" class="has-description">
                       <span class="json-property-name">allow:</span>
@@ -1220,8 +1231,8 @@
                 <section>
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-  <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>
+  <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
+  <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -1279,11 +1290,11 @@
                 <section>
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+  <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>,
   <span class="hljs-attr">&quot;rules&quot;</span>: [
     {
-      <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-      <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>
+      <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
+      <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>
     }
   ]
 }
@@ -1322,7 +1333,7 @@
                 <section>
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -1386,7 +1397,7 @@
                 <section>
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
+  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>
 }
 </code></pre>
                   <!-- </div> -->
@@ -1456,7 +1467,11 @@
                       <section class="json-schema-array-items">
                         <span class="json-property-type">string</span>
                         <span class="json-property-range" title="Value limits"></span>
-                        <div class="json-inner-schema"> </div>
+                        <div class="json-inner-schema">
+                          <section class="json-schema-description">
+                            <p>Group/Role identifier to be used in this operation.</p>
+                          </section>
+                        </div>
                       </section>
                     </dt>
                   </dl>
@@ -1466,9 +1481,9 @@
                 <section>
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
-  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>,
   <span class="hljs-attr">&quot;groups&quot;</span>: [
-    <span class="hljs-string">&quot;string&quot;</span>
+    <span class="hljs-string">&quot;Administrators&quot;</span>
   ]
 }
 </code></pre>

@@ -45,11 +45,16 @@ Known issues
 Sometimes all tables are not created.
 
 
-Api docs
+API docs
 -------
 
 * [Html API docs](http://aaltoasia.github.io/O-MI-Authorization/)
 * [swagger.yaml](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/swagger.yaml)
+
+Debugging
+----------
+
+Uncomment all loggers in logback.xml, which is in directory `src/main/resources/` in dev version and in `conf/` in releases.
 
 Example usage
 -------------
