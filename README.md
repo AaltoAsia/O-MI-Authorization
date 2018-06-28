@@ -81,7 +81,7 @@ Examples with [httpie](https://httpie.org/doc) program
 
 `http POST :8001/v1/set-rules group=Testers rules:='[{"path":"Objects","request":"r","allow":true},{"path":"Objects","request":"wcd","allow":false}]'`
 
-`http POST :8001/v1/get-permissions username=Tester1 request=r`
+`http POST :8001/v1/get-permissions username=Tester1 request=r groups:='["Testers"]'`
 
 `http POST :8001/v1/remove-rules group=Testers rules:='[{"path":"Objects","allow":true}]'` 
 
