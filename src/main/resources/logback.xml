@@ -13,9 +13,9 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/omi.log</file>
+        <file>logs/omi-authorization.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>logs\omi.%i.log</fileNamePattern>
+            <fileNamePattern>logs\omi-authorization.%i.log</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>4</maxIndex>
         </rollingPolicy>
@@ -35,6 +35,7 @@
 
 
 <!-- Possible to edit levels of different loggers INFO level is currently set using filter
+-->
     <logger name="akka" level="INFO" />
     <logger name="slick" level="INFO" />
     <logger name="com.zaxxer.hikari" level="INFO" />
@@ -44,8 +45,7 @@
     <logger name="akka.io.TcpListener" level="INFO" />
 
     <logger name="database" level="DEBUG" />
--->
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ASYNC"/>
     </root>
