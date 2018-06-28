@@ -114,12 +114,24 @@ class AuthorizationDB(
         log.info(s"Found following rules from DB:\n${rules.mkString("\n")}")
     })
   }
-  def userRulesForRequest(username: String, request: Request): Future[PermissionResult] = {
-    logGroups.flatMap(_ =>
-      logMembers.flatMap(_ =>
-        logRules.flatMap(
-          _ =>
-            db.run(queryUserRulesForRequest(username, request)))))
+  def getPermissions(username: String, groups: Set[String], request: Request): Future[PermissionResult] = {
+    db.run(getPermissionsIOA(username, groups, request))
+  }
+  def getUsers: Future[Set[String]] = {
+    db.run(usersTable.map(_.name).result.map(_.toSet))
+  }
+  def getGroups: Future[Set[String]] = {
+    db.run(groupsTable.map(_.name).result.map(_.toSet))
+  }
+  def getMembers(groupname: String): Future[Set[String]] = {
+    val groupIds = groupsTable.filter(_.name === groupname).map(_.groupId)
+    val memberIds = for {
+      (gId, me) <- groupIds join membersTable on ((gId, me) => gId === me.groupId)
+    } yield (me.userId)
+    val users = for {
+      (mId, ue) <- memberIds join usersTable on ((mId, ue) => mId === ue.userId)
+    } yield (ue.name)
+    db.run(users.result.map(_.toSet))
   }
 
   def newUser(username: String): Future[Unit] = {

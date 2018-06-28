@@ -35,7 +35,7 @@ trait AuthRoutes extends JsonSupport {
     post {
       path("get-permissions") {
         entity(as[GetPermissions]) { pr =>
-          val permissions: Future[PermissionResult] = authDB.userRulesForRequest(pr.username, pr.request)
+          val permissions: Future[PermissionResult] = authDB.getPermissions(pr.username, pr.groups, pr.request)
           permissions.onFailure {
             case t: Throwable =>
               log.error(t.getMessage)
@@ -81,6 +81,20 @@ trait AuthRoutes extends JsonSupport {
         entity(as[RemoveRules]) { ar: RemoveRules =>
           val result: Future[Unit] = authDB.removeRules(ar.group, ar.rules)
           complete(result)
+        }
+      } ~ path("get-members") {
+        entity(as[GetMembers]) { gm: GetMembers =>
+          complete(authDB.getMembers(gm.groupname))
+        }
+      }
+    } ~ get {
+      path("get-users") {
+        complete(authDB.getUsers)
+      } ~ path("get-groups") {
+        complete(authDB.getGroups)
+      } ~ path("get-members") {
+        parameters("groupname".as[String]) { (groupname) =>
+          complete(authDB.getMembers(groupname))
         }
       }
     }

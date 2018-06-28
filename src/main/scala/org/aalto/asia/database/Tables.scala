@@ -139,9 +139,10 @@ trait AuthorizationTables extends DBBase {
   val rulesTable = new Rules()
 
   def currentTimestamp: Timestamp = new Timestamp(new Date().getTime())
-  protected def queryUserRulesForRequest(username: String, request: Request) = {
+  protected def getPermissionsIOA(username: String, groups: Set[String], request: Request) = {
     val user = usersTable.filter { row => row.name === username }
-    val groups = for {
+    val knownGroups = groupsTable.filter { row => row.name.inSet(groups ++ Set("DEFAULT")) }.map { row => row.groupId }
+    val groupsInDB = for {
       (user, member) <- user join membersTable on { (user, memberEntry) => memberEntry.userId === user.userId }
     } yield (member.groupId)
     def tmp(groupIds: Set[Long]): DBIOro[Set[Long]] = {
@@ -159,7 +160,17 @@ trait AuthorizationTables extends DBBase {
           }
       }
     }
-    val allGroups: DBIOro[Set[Long]] = groups.result.map(_.toSet) /*.flatMap {
+    val allGroups: DBIOro[Set[Long]] = groupsInDB.result.flatMap {
+      result =>
+        if (groups.nonEmpty) {
+          knownGroups.result.map {
+            kgResult =>
+              result.toSet ++ kgResult.toSet
+          }
+        } else {
+          DBIO.successful(result.toSet)
+        }
+    } /*.flatMap {
       groupIds: Seq[Long] =>
         tmp(groupIds.toSet)
     }*/

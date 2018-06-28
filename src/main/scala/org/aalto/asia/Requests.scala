@@ -63,8 +63,8 @@ case class ReadWriteCallDelete() extends Request {
 import RequestType._
 case class GetPermissions(
   val username: String,
-  val request: Request //Read,Call,Write,Delete
-)
+  val request: Request, //Read,Call,Write,Delete
+  val groups: Set[String])
 
 case class PermissionResult(
   allowed: Set[Path],
@@ -81,10 +81,13 @@ case class RemoveRules(
 
 case class AddUser(val username: String)
 case class RemoveUser(val username: String)
+case object GetUsers
 
 case class AddGroup(val groupname: String)
 case class RemoveGroup(val groupname: String)
+case object GetGroups
 
+case class GetMembers(val groupname: String)
 case class JoinGroups(val username: String, val groups: Set[String])
 case class LeaveGroups(val username: String, val groups: Set[String])
 

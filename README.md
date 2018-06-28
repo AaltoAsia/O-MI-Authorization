@@ -56,8 +56,6 @@ Compiling
 Known issues
 ------------
 
-Sometimes all tables are not created.
-
 
 API docs
 -------
@@ -92,3 +90,11 @@ Examples with [httpie](https://httpie.org/doc) program
 `http POST :8001/v1/remove-group groupname=Testers`
 
 `http POST :8001/v1/remove-user username=Tester1`
+
+`http GET :8001/v1/get-users`
+
+`http GET :8001/v1/get-groups`
+
+`http POST :8001/v1/get-members groupname=Testers`
+`http GET :8001/v1/get-members groupname=Testers`
+
