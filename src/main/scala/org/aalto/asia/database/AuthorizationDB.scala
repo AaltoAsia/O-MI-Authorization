@@ -121,11 +121,28 @@ class AuthorizationDB(
   def getPermissions(username: String, groups: Set[String], request: Request): Future[PermissionResult] = {
     db.run(getPermissionsIOA(username, groups, request))
   }
-  def getUsers: Future[Set[String]] = {
-    db.run(usersTable.map(_.name).result.map(_.toSet))
+  def getUsers(group: Option[String]): Future[Set[String]] = {
+    group.map {
+      groupname =>
+        getMembers(groupname)
+    }.getOrElse {
+      db.run(usersTable.map(_.name).result.map(_.toSet))
+    }
   }
-  def getGroups: Future[Set[String]] = {
-    db.run(groupsTable.map(_.name).result.map(_.toSet))
+  def getGroups(user: Option[String]): Future[Set[String]] = {
+    user.map {
+      username =>
+        val uid = usersTable.filter(_.name === username).map(_.userId)
+        val groupIds = for {
+          (gId, me) <- uid join membersTable on ((id, me) => id === me.userId)
+        } yield (me.groupId)
+        val groups = for {
+          (gId, group) <- groupIds join groupsTable on ((id, ge) => id === ge.groupId)
+        } yield (group.name)
+        db.run(groups.result.map(_.toSet))
+    }.getOrElse {
+      db.run(groupsTable.map(_.name).result.map(_.toSet))
+    }
   }
   def getMembers(groupname: String): Future[Set[String]] = {
     val groupIds = groupsTable.filter(_.name === groupname).map(_.groupId)

@@ -81,11 +81,11 @@ case class RemoveRules(
 
 case class AddUser(val username: String)
 case class RemoveUser(val username: String)
-case object GetUsers
+case class GetUsers(val groupname: Option[String])
 
 case class AddGroup(val groupname: String)
 case class RemoveGroup(val groupname: String)
-case object GetGroups
+case class GetGroups(val username: Option[String])
 
 case class GetMembers(val groupname: String)
 case class JoinGroups(val username: String, val groups: Set[String])

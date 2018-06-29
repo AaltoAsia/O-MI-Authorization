@@ -86,14 +86,27 @@ trait AuthRoutes extends JsonSupport {
         entity(as[GetMembers]) { gm: GetMembers =>
           complete(authDB.getMembers(gm.groupname))
         }
+      } ~ path("get-groups") {
+        entity(as[GetGroups]) { gg: GetGroups =>
+          complete(authDB.getGroups(gg.username))
+        } ~ complete(authDB.getGroups(None))
+      } ~ path("get-users") {
+        entity(as[GetUsers]) { gu: GetUsers =>
+          complete(authDB.getUsers(gu.groupname))
+        } ~ complete(authDB.getUsers(None))
       }
+
     } ~ get {
       path("get-users") {
-        complete(authDB.getUsers)
+        parameters("groupname".?) { (groupname: Option[String]) =>
+          complete(authDB.getUsers(groupname))
+        }
       } ~ path("get-groups") {
-        complete(authDB.getGroups)
+        parameters("username".?) { (username: Option[String]) =>
+          complete(authDB.getGroups(username))
+        }
       } ~ path("get-members") {
-        parameters("groupname".as[String]) { (groupname) =>
+        parameters("groupname") { (groupname: String) =>
           complete(authDB.getMembers(groupname))
         }
       }
