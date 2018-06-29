@@ -226,6 +226,7 @@ class AuthorizationDB(
     }
     db.run(action).map(_ => Unit)
   }
+  /*
   def newSubGroup(subgroup: String, group: String) = {
     val ids = for {
       sgroup <- groupsTable.filter { row => row.name === subgroup }
@@ -256,7 +257,7 @@ class AuthorizationDB(
         DBIO.sequence(removes)
     }
     db.run(action).map(_ => Unit)
-  }
+  }*/
   def removeRules(groupname: String, rules: Seq[RRule]): Future[Unit] = {
     val action = groupsTable.filter { row => row.name === groupname }.map(_.groupId).result.flatMap {
       groupIds: Seq[Long] =>

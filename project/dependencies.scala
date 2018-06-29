@@ -20,7 +20,8 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-stream-testkit"  % akkaVersion     % Test
   )
   val scala_test_dependencies = Seq(
-    "org.scalatest"     %% "scalatest"            % "3.0.1"         % Test
+    "org.scalatest"     %% "scalatest"            % "3.0.1"         % Test,
+    "org.specs2"     %% "specs2-core"            % "4.2.0"         % Test
   )
 
   //etc

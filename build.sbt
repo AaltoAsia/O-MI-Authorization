@@ -9,7 +9,9 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= akka_dependencies,
     libraryDependencies ++= akka_test_dependencies,
     libraryDependencies ++= scala_test_dependencies,
-    libraryDependencies ++= slick_dependencies
+    libraryDependencies ++= slick_dependencies,
+    parallelExecution in Test := false,
+    scalacOptions in Test ++= Seq("-Yrangepos")
   )
 enablePlugins(JavaServerAppPackaging)
 enablePlugins(UniversalPlugin)

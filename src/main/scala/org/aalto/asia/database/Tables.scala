@@ -103,13 +103,14 @@ trait AuthorizationTables extends DBBase {
     def userId: Rep[Long] = column[Long]("USER_ID")
     def userIndex = index("MEMBERS_USER_INDEX", userId, unique = false)
     def groupIndex = index("MEMBERS_GROUP_INDEX", groupId, unique = false)
-    def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-    def usersFK = foreignKey("USER_FK", userId, usersTable)(_.userId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def groupsFK = foreignKey("MEMBERS_GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def usersFK = foreignKey("MEMBERS_USER_FK", userId, usersTable)(_.userId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
     def * = (groupId, userId) <> (MemberEntry.tupled, MemberEntry.unapply)
   }
   class Members extends TableQuery[MembersTable](new MembersTable(_))
   val membersTable = new Members()
 
+  /*
   class SubGroupsTable(tag: Tag) extends Table[SubGroupEntry](tag, "SUBGROUPS") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID")
     def subGroupId: Rep[Long] = column[Long]("SUB_GROUP_ID")
@@ -121,6 +122,7 @@ trait AuthorizationTables extends DBBase {
   }
   class SubGroups extends TableQuery[SubGroupsTable](new SubGroupsTable(_))
   val subGroupsTable = new SubGroups()
+  */
 
   class RulesTable(tag: Tag) extends Table[RuleEntry](tag, "RULES") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID")
@@ -131,7 +133,7 @@ trait AuthorizationTables extends DBBase {
     def groupIndex = index("RULES_GROUP_INDEX", groupId, unique = false)
     def groupRequestIndex = index("RULES_GROUP_REQUEST_INDEX", (groupId, request), unique = false)
 
-    def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def groupsFK = foreignKey("RULES_GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
     def * = (groupId, request, allow, path) <> (RuleEntry.tupled, RuleEntry.unapply)
   }
 
@@ -145,6 +147,8 @@ trait AuthorizationTables extends DBBase {
     val groupsInDB = for {
       (user, member) <- user join membersTable on { (user, memberEntry) => memberEntry.userId === user.userId }
     } yield (member.groupId)
+    /*
+    //Recursive subgroup getter
     def tmp(groupIds: Set[Long]): DBIOro[Set[Long]] = {
       subGroupsTable.filter {
         row => row.subGroupId inSet (groupIds)
@@ -159,7 +163,7 @@ trait AuthorizationTables extends DBBase {
             DBIO.successful(gIds)
           }
       }
-    }
+    }*/
     val allGroups: DBIOro[Set[Long]] = groupsInDB.result.flatMap {
       result =>
         if (groups.nonEmpty) {
