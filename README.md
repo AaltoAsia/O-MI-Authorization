@@ -73,25 +73,25 @@ Example usage
 
 Examples with [httpie](https://httpie.org/doc) program
 
-###Adding users and groups
+### Adding users and groups
 
 `http POST :8001/v1/add-user username=Tester1`
 
 `http POST :8001/v1/add-group groupname=Testers`
 
-###Joining and leaving groups
+### Joining and leaving groups
 
 `http POST :8001/v1/join-groups username=Tester1 groups:='["Testers"]'`
 
 `http POST :8001/v1/leave-groups username=Tester1 groups:='["Testers"]'`
 
-###Setting and removing rules 
+### Setting and removing rules 
 
 `http POST :8001/v1/set-rules group=Testers rules:='[{"path":"Objects","request":"r","allow":true},{"path":"Objects","request":"wcd","allow":false}]'`
 
 `http POST :8001/v1/remove-rules group=Testers rules:='[{"path":"Objects","allow":true}]'` 
 
-###Getting rules for request and user
+### Getting rules for request and user
 
 `http POST :8001/v1/get-permissions username=Tester1 request=r`
 
@@ -99,19 +99,19 @@ Can also include groups known by authentication
 
 `http POST :8001/v1/get-permissions username=Tester1 request=r groups:='["Testers"]'`
 
-###Removing groups and user
+### Removing groups and user
 
 `http POST :8001/v1/remove-group groupname=Testers`
 
 `http POST :8001/v1/remove-user username=Tester1`
 
-###Get all users
+### Get all users
 
 `http GET :8001/v1/get-users`
 
 `http POST :8001/v1/get-users`
 
-###Get users in group
+### Get users in group
 
 `http GET :8001/v1/get-users groupname==Testers`
 
@@ -123,13 +123,13 @@ Alternative path
 
 `http GET :8001/v1/get-members groupname==Testers`
 
-###Get all groups
+### Get all groups
 
 `http GET :8001/v1/get-groups`
 
 `http POST :8001/v1/get-groups`
 
-###Get all groups with given user as member
+### Get all groups with given user as member
 
 `http GET :8001/v1/get-groups username=Tester`
 
