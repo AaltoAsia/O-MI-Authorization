@@ -61,12 +61,14 @@ class AuthorizationDB(
         DBIO.sequence(tableCreations.toSeq)
     }.flatMap {
       res =>
-        groupsTable.filter(group => group.name inSet (expectedGroups)).result.flatMap {
-          foundGroups: Seq[GroupEntry] =>
+        groupsTable.filter(group => group.name inSet (expectedGroups)).map(_.name).result.flatMap {
+          foundGroups: Seq[String] =>
+            log.info(s"Found following groups: " + foundGroups.mkString(", "))
             val entries = expectedGroups.filter(!foundGroups.contains(_)).map {
               groupName => GroupEntry(None, groupName)
             }
             if (entries.nonEmpty) {
+              log.info(entries.toString)
               groupsTable ++= entries
             } else {
               DBIO.successful(foundGroups.toSet)
@@ -75,6 +77,7 @@ class AuthorizationDB(
     }
     val future = db.run(actions).flatMap {
       _ =>
+        log.info(s"DBIOActions complete, checking existing tables.")
         db.run(
           currentTableNames.map {
             tableNames: Seq[String] =>
@@ -84,11 +87,12 @@ class AuthorizationDB(
               if (notCreated.nonEmpty)
                 log.error(s"Could not create following tables: $notCreated")
               else log.info(s"DB successfully initialised")
-          }).flatMap(_ => logGroups)
+          }) //.flatMap(_ => logGroups)
     }
     future.onFailure {
       case t: Exception =>
         log.error(t.getMessage)
+        throw t
     }
     Await.ready(future, 1.minutes)
   }

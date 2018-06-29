@@ -96,5 +96,5 @@ Examples with [httpie](https://httpie.org/doc) program
 `http GET :8001/v1/get-groups`
 
 `http POST :8001/v1/get-members groupname=Testers`
-`http GET :8001/v1/get-members groupname=Testers`
+`http GET :8001/v1/get-members groupname==Testers`
 
