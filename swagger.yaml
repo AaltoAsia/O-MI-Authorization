@@ -18,8 +18,8 @@ tags:
   #  url: "http://swagger.io"
 - name: "Groups/Roles"
   description: "Operations about groups."
-- name: "Rules"
-  description: "Operations about permission Rules."
+- name: "Permissions"
+  description: "Operations about permission Permissions."
   
 consumes:
   - application/json
@@ -108,7 +108,7 @@ paths:
       summary: "Remove group"
       description: |
         Removes the group and removes all data that was connected to the group,
-        including rules.
+        including permissions.
 
       parameters:
       - in: "body"
@@ -165,18 +165,18 @@ paths:
         400:
           description: "Invalid input"
           
-  /set-rules:
+  /set-permissions:
     post:
       tags:
-      - "Rules"
-      summary: "Set rules for group/role"
+      - "Permissions"
+      summary: "Set permissions for group/role"
       description: |
-        Set permission rules for a group/role. These are seperated in allow and
-        deny rules. In O-MI Node the rules are prosessed by first filtering the
-        incoming request by allow rules and then filtering with the deny rules from
+        Set permission permissions for a group/role. These are seperated in allow and
+        deny permissions. In O-MI Node the permissions are prosessed by first filtering the
+        incoming request by allow permissions and then filtering with the deny permissions from
         the result.
 
-        To set rules for consumer, it either needs to be added to groups or the
+        To set permissions for consumer, it either needs to be added to groups or the
         automatic `username_USERGROUP` can be used.
 
       parameters:
@@ -185,17 +185,17 @@ paths:
         description: "Parameters in json"
         required: true
         schema:
-          $ref: "#/definitions/SetRules"
+          $ref: "#/definitions/SetPermissions"
       responses:
         200:
           description: "OK"
         400:
           description: "Invalid input"
-  /remove-rules:
+  /remove-permissions:
     post:
       tags:
-      - "Rules"
-      summary: "Remove rules from group/role"
+      - "Permissions"
+      summary: "Remove permissions from group/role"
       description: ""
 
       parameters:
@@ -204,7 +204,7 @@ paths:
         description: "Parameters in json"
         required: true
         schema:
-          $ref: "#/definitions/RemoveRules"
+          $ref: "#/definitions/RemovePermissions"
       responses:
         200:
           description: "OK"
@@ -213,18 +213,18 @@ paths:
   /get-permissions:
     post:
       tags:
-      - "Rules"
-      summary: "Get rules of a consumer and a request type"
+      - "Permissions"
+      summary: "Get permissions of a consumer and a request type"
       description: |
         Permissions of a consumer for a request type. This operation should be
         used by O-MI Node for authorization, meaning the result is compatible
         with Authorization API service v2.
 
         If the consumer has connections to many groups/roles (with
-        [join-groups](#operation--join-groups-post)) and they have many rules,
-        the rules are concatenated in the following way:
-        * allow rules are combined with set union
-        * deny rules are combined with set intersection
+        [join-groups](#operation--join-groups-post)) and they have many permissions,
+        the permissions are concatenated in the following way:
+        * allow permissions are combined with set union
+        * deny permissions are combined with set intersection
 
         Hierarchical structure of the O-DF paths is taken into account when
         doing these set operations. This way the consumer, belonging to a
@@ -241,7 +241,7 @@ paths:
           $ref: "#/definitions/GetPermissions"
       responses:
         200:
-          description: "Rules aggregated for given consumer and request"
+          description: "Permissions aggregated for given consumer and request"
           schema:
             $ref: "#/definitions/PermissionResult"
         400:
@@ -258,7 +258,7 @@ definitions:
       * `c` for call request
       * `d` for delete request
 
-      When setting new rules, many request types can be used by concatenating them.
+      When setting new permissions, many request types can be used by concatenating them.
 
   GetPermissions:
     description: >
@@ -294,7 +294,7 @@ definitions:
         items: *path
         description: "Paths that are disallowed for the consumer."
 
-  Rule:
+  Permission:
     type: object
     required:
       - path
@@ -305,26 +305,26 @@ definitions:
       allow: &allow
         type: boolean
         example: true
-        description: "Set to `true` to make an allow rule or `false` to make a deny rule."
+        description: "Set to `true` to make an allow permission or `false` to make a deny permission."
       request:
         $ref: "#/definitions/Request"
 
-  SetRules:
+  SetPermissions:
     type: object
     required:
       - group
-      - rules
+      - permissions
     properties:
       group: &groupname
         type: string
         description: "Group/Role identifier to be used in this operation."
         example: "Administrators"
-      rules:
+      permissions:
         type: array
         items:
-          $ref: "#/definitions/Rule"
+          $ref: "#/definitions/Permission"
 
-  RRule:
+  RPermission:
     type: object
     required:
       - path
@@ -333,17 +333,17 @@ definitions:
       path: *path
       allow: *allow
 
-  RemoveRules:
+  RemovePermissions:
     type: object
     required:
       - group
-      - rules
+      - permissions
     properties:
       group: *groupname
-      rules:
+      permissions:
         type: array
         items:
-          $ref: "#/definitions/RRule"
+          $ref: "#/definitions/RPermission"
 
   AddUser:
     type: object
