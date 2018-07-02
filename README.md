@@ -85,13 +85,13 @@ Examples with [httpie](https://httpie.org/doc) program
 
 `http POST :8001/v1/leave-groups username=Tester1 groups:='["Testers"]'`
 
-### Setting and removing rules 
+### Setting and removing permissions 
 
-`http POST :8001/v1/set-rules group=Testers rules:='[{"path":"Objects","request":"r","allow":true},{"path":"Objects","request":"wcd","allow":false}]'`
+`http POST :8001/v1/set-permissions group=Testers permissions:='[{"path":"Objects","request":"r","allow":true},{"path":"Objects","request":"wcd","allow":false}]'`
 
-`http POST :8001/v1/remove-rules group=Testers rules:='[{"path":"Objects","allow":true}]'` 
+`http POST :8001/v1/remove-permissions group=Testers permissions:='[{"path":"Objects","allow":true}]'` 
 
-### Getting rules for request and user
+### Getting permissions for request and user
 
 `http POST :8001/v1/get-permissions username=Tester1 request=r`
 
