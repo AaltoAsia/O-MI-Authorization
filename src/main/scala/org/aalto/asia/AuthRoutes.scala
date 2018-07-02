@@ -72,14 +72,14 @@ trait AuthRoutes extends JsonSupport {
           val result: Future[Unit] = authDB.joinGroups(ar.username, ar.groups)
           complete(result)
         }
-      } ~ path("set-rules") {
-        entity(as[SetRules]) { ar: SetRules =>
-          val result: Future[Unit] = authDB.setRulesForPaths(ar.group, ar.rules)
+      } ~ path("set-permissions") {
+        entity(as[SetPermissions]) { ar: SetPermissions =>
+          val result: Future[Unit] = authDB.setPermissionsForPaths(ar.group, ar.rules)
           complete(result)
         }
-      } ~ path("remove-rules") {
-        entity(as[RemoveRules]) { ar: RemoveRules =>
-          val result: Future[Unit] = authDB.removeRules(ar.group, ar.rules)
+      } ~ path("remove-permission") {
+        entity(as[RemovePermissions]) { ar: RemovePermissions =>
+          val result: Future[Unit] = authDB.removePermissions(ar.group, ar.rules)
           complete(result)
         }
       } ~ path("get-members") {

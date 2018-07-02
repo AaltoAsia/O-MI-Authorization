@@ -26,7 +26,7 @@ import org.aalto.asia.requests._
 
 import Request._
 
-case class RuleEntry(
+case class PermissionEntry(
   val groupId: Long,
   val request: String,
   val allow: Boolean,
@@ -124,7 +124,7 @@ trait AuthorizationTables extends DBBase {
   val subGroupsTable = new SubGroups()
   */
 
-  class RulesTable(tag: Tag) extends Table[RuleEntry](tag, "RULES") {
+  class PermissionsTable(tag: Tag) extends Table[PermissionEntry](tag, "RULES") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID")
     def request: Rep[String] = column[String]("REQUEST")
     def path: Rep[Path] = column[Path]("PATH")
@@ -134,11 +134,11 @@ trait AuthorizationTables extends DBBase {
     def groupRequestIndex = index("RULES_GROUP_REQUEST_INDEX", (groupId, request), unique = false)
 
     def groupsFK = foreignKey("RULES_GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-    def * = (groupId, request, allow, path) <> (RuleEntry.tupled, RuleEntry.unapply)
+    def * = (groupId, request, allow, path) <> (PermissionEntry.tupled, PermissionEntry.unapply)
   }
 
-  class Rules extends TableQuery[RulesTable](new RulesTable(_))
-  val rulesTable = new Rules()
+  class Permissions extends TableQuery[PermissionsTable](new PermissionsTable(_))
+  val permissionsTable = new Permissions()
 
   def currentTimestamp: Timestamp = new Timestamp(new Date().getTime())
   protected def getPermissionsIOA(username: String, groups: Set[String], request: Request) = {
@@ -181,19 +181,19 @@ trait AuthorizationTables extends DBBase {
     val action = allGroups.flatMap {
       groupIds: Set[Long] =>
         log.info(s"Found following group ids for $username: $groupIds")
-        rulesTable.filter {
+        permissionsTable.filter {
           row =>
             row.groupId inSet (groupIds)
         }.filter {
           row =>
             row.request like (s"%${request.toString}%")
         }.result.map {
-          rules: Seq[RuleEntry] =>
-            log.info(s"Got following rules for $username: $rules")
-            val (allows, denies) = rules.partition(_.allow)
+          permissions: Seq[PermissionEntry] =>
+            log.info(s"Got following permissions for $username: $permissions")
+            val (allows, denies) = permissions.partition(_.allow)
             val deniedPaths: Set[Path] = denies.groupBy(_.groupId).mapValues {
-              rules: Seq[RuleEntry] =>
-                rules.map(_.path).toSet
+              permissions: Seq[PermissionEntry] =>
+                permissions.map(_.path).toSet
             }.values.reduceOption[Set[Path]] {
               case (result: Set[Path], r: Set[Path]) =>
                 r.filter {
@@ -211,8 +211,8 @@ trait AuthorizationTables extends DBBase {
                 }
             }.getOrElse(Set.empty[Path])
             val allowedPaths: Set[Path] = allows.groupBy(_.groupId).mapValues {
-              rules: Seq[RuleEntry] =>
-                rules.map(_.path).toSet
+              permissions: Seq[PermissionEntry] =>
+                permissions.map(_.path).toSet
             }.values.reduceOption[Set[Path]] { _ ++ _ }
               .getOrElse(Set.empty[Path])
             PermissionResult(allowedPaths, deniedPaths)

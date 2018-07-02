@@ -70,14 +70,14 @@ case class PermissionResult(
   allowed: Set[Path],
   denied: Set[Path])
 
-case class Rule(path: Path, request: Request, allow: Boolean)
-case class SetRules(
+case class Permission(path: Path, request: Request, allow: Boolean)
+case class SetPermissions(
   val group: String,
-  val rules: Seq[Rule])
-case class RRule(path: Path, allow: Boolean)
-case class RemoveRules(
+  val rules: Seq[Permission])
+case class RPermission(path: Path, allow: Boolean)
+case class RemovePermissions(
   val group: String,
-  val rules: Seq[RRule])
+  val rules: Seq[RPermission])
 
 case class AddUser(val username: String)
 case class RemoveUser(val username: String)

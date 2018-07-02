@@ -56,7 +56,7 @@ class AuthorizationDB(
           case "USERS" => usersTable.schema.create
           case "GROUPS" => groupsTable.schema.create
           case "MEMBERS" => membersTable.schema.create
-          case "RULES" => rulesTable.schema.create
+          case "RULES" => permissionsTable.schema.create
         }
         DBIO.sequence(tableCreations.toSeq)
     }.flatMap {
@@ -112,10 +112,10 @@ class AuthorizationDB(
         log.info(s"Found following members from DB:\n${members.mkString("\n")}")
     })
   }
-  def logRules: Future[Unit] = {
-    db.run(rulesTable.result.map {
-      rules =>
-        log.info(s"Found following rules from DB:\n${rules.mkString("\n")}")
+  def logPermissions: Future[Unit] = {
+    db.run(permissionsTable.result.map {
+      permissions =>
+        log.info(s"Found following permissions from DB:\n${permissions.mkString("\n")}")
     })
   }
   def getPermissions(username: String, groups: Set[String], request: Request): Future[PermissionResult] = {
@@ -258,15 +258,15 @@ class AuthorizationDB(
     }
     db.run(action).map(_ => Unit)
   }*/
-  def removeRules(groupname: String, rules: Seq[RRule]): Future[Unit] = {
+  def removePermissions(groupname: String, permissions: Seq[RPermission]): Future[Unit] = {
     val action = groupsTable.filter { row => row.name === groupname }.map(_.groupId).result.flatMap {
       groupIds: Seq[Long] =>
         groupIds.headOption match {
           case Some(groupId) =>
-            DBIO.sequence(rules.map {
-              case RRule(path, allow) =>
-                rulesTable.filter {
-                  rule => rule.groupId === groupId && rule.path === path && rule.allow === allow
+            DBIO.sequence(permissions.map {
+              case RPermission(path, allow) =>
+                permissionsTable.filter {
+                  permission => permission.groupId === groupId && permission.path === path && permission.allow === allow
                 }.delete
             }.toSeq)
           case None =>
@@ -276,24 +276,24 @@ class AuthorizationDB(
     db.run(action).map { _ => Unit }
   }
 
-  def setRulesForPaths(groupname: String, pathRules: Seq[Rule]): Future[Unit] = {
+  def setPermissionsForPaths(groupname: String, pathPermissions: Seq[Permission]): Future[Unit] = {
     val action = groupsTable.filter { row => row.name === groupname }.map(_.groupId).result.flatMap {
       groupIds: Seq[Long] =>
         groupIds.headOption match {
           case Some(groupId) =>
-            val insertOrUpdates = pathRules.map {
-              case Rule(path: Path, request: Request, allow: Boolean) =>
-                val existsQ = rulesTable.filter {
+            val insertOrUpdates = pathPermissions.map {
+              case Permission(path: Path, request: Request, allow: Boolean) =>
+                val existsQ = permissionsTable.filter {
                   row =>
                     row.path === path &&
                       row.groupId === groupId &&
                       row.allow === allow
                 }
                 existsQ.result.flatMap {
-                  rules =>
-                    rules.headOption match {
-                      case None => { rulesTable += RuleEntry(groupId, request.toString, allow, path) }
-                      case Some(rule) => { existsQ.map(_.request).update(request.toString) }
+                  permissions =>
+                    permissions.headOption match {
+                      case None => { permissionsTable += PermissionEntry(groupId, request.toString, allow, path) }
+                      case Some(permission) => { existsQ.map(_.request).update(request.toString) }
                     }
                 }
 
