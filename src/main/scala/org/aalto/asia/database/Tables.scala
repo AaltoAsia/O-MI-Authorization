@@ -166,13 +166,9 @@ trait AuthorizationTables extends DBBase {
     }*/
     val allGroups: DBIOro[Set[Long]] = groupsInDB.result.flatMap {
       result =>
-        if (groups.nonEmpty) {
-          knownGroups.result.map {
-            kgResult =>
-              result.toSet ++ kgResult.toSet
-          }
-        } else {
-          DBIO.successful(result.toSet)
+        knownGroups.result.map {
+          kgResult =>
+            result.toSet ++ kgResult.toSet
         }
     } /*.flatMap {
       groupIds: Seq[Long] =>
@@ -183,10 +179,8 @@ trait AuthorizationTables extends DBBase {
         log.info(s"Found following group ids for $username: $groupIds")
         permissionsTable.filter {
           row =>
-            row.groupId inSet (groupIds)
-        }.filter {
-          row =>
-            row.request like (s"%${request.toString}%")
+            (row.groupId inSet (groupIds)) &&
+              (row.request like (s"%${request.toString}%"))
         }.result.map {
           permissions: Seq[PermissionEntry] =>
             log.info(s"Got following permissions for $username: $permissions")
