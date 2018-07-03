@@ -20,9 +20,11 @@ omi-service.authAPI.v2 {
 
     # Url to do authentication (checking if the consumer have valid credentials or session)
     #authentication.url = "<set for authentication>"
+    
 
     # Url to do authorization (checking what data a given user has permissions to read or write)
     authorization.url = "http://localhost:8001/v1/get-permissions"
+    authorization.method = "POST"
     
     # predefined variables: requestType and requestTypeLetter which tell O-MI verb name (read, write, call, delete)
     # for O-MI Authorization ref. impl: http POST {"username": <username>, "request": <first-character-of-omi-request-type>}
