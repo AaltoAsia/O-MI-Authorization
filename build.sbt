@@ -11,7 +11,8 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= scala_test_dependencies,
     libraryDependencies ++= slick_dependencies,
     parallelExecution in Test := false,
-    scalacOptions in Test ++= Seq("-Yrangepos")
+    scalacOptions := Seq("-unchecked", "-feature", "-deprecation", "-encoding", "utf8", "-Xlint"),
+    scalacOptions in Test ++= Seq("-Yrangepos","-unchecked", "-feature", "-deprecation", "-encoding", "utf8", "-Xlint")
   )
 enablePlugins(JavaServerAppPackaging)
 enablePlugins(UniversalPlugin)
