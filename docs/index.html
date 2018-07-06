@@ -29,6 +29,18 @@
               <li>
                 <a href="#operation--remove-user-post"> Remove a consumer </a>
               </li>
+              <li>
+                <a href="#operation--get-groups-post"> Get groups/roles. </a>
+              </li>
+              <li>
+                <a href="#operation--get-groups-get"> Get groups/roles. </a>
+              </li>
+              <li>
+                <a href="#operation--get-users-post"> Get consumers. </a>
+              </li>
+              <li>
+                <a href="#operation--get-users-get"> Get consumers. </a>
+              </li>
             </ul>
           </section>
           <section>
@@ -46,19 +58,37 @@
               <li>
                 <a href="#operation--leave-groups-post"> Remove consumer from groups / unassign roles </a>
               </li>
+              <li>
+                <a href="#operation--get-members-post"> Get members of a group </a>
+              </li>
+              <li>
+                <a href="#operation--get-members-get"> Get members of a group </a>
+              </li>
+              <li>
+                <a href="#operation--get-groups-post"> Get groups/roles. </a>
+              </li>
+              <li>
+                <a href="#operation--get-groups-get"> Get groups/roles. </a>
+              </li>
+              <li>
+                <a href="#operation--get-users-post"> Get consumers. </a>
+              </li>
+              <li>
+                <a href="#operation--get-users-get"> Get consumers. </a>
+              </li>
             </ul>
           </section>
           <section>
-            <a href="#tag-Rules">Rules</a>
+            <a href="#tag-Permissions">Permissions</a>
             <ul>
               <li>
-                <a href="#operation--set-rules-post"> Set rules for group/role </a>
+                <a href="#operation--set-permissions-post"> Set permissions for group/role </a>
               </li>
               <li>
-                <a href="#operation--remove-rules-post"> Remove rules from group/role </a>
+                <a href="#operation--remove-permissions-post"> Remove permissions from group/role </a>
               </li>
               <li>
-                <a href="#operation--get-permissions-post"> Get rules of a consumer and a request type </a>
+                <a href="#operation--get-permissions-post"> Get permissions of a consumer and a request type </a>
               </li>
             </ul>
           </section>
@@ -66,16 +96,21 @@
           <a href="#definition-Request"> Request </a>
           <a href="#definition-GetPermissions"> GetPermissions </a>
           <a href="#definition-PermissionResult"> PermissionResult </a>
-          <a href="#definition-Rule"> Rule </a>
-          <a href="#definition-SetRules"> SetRules </a>
-          <a href="#definition-RRule"> RRule </a>
-          <a href="#definition-RemoveRules"> RemoveRules </a>
+          <a href="#definition-Permission"> Permission </a>
+          <a href="#definition-SetPermissions"> SetPermissions </a>
+          <a href="#definition-RPermission"> RPermission </a>
+          <a href="#definition-RemovePermissions"> RemovePermissions </a>
           <a href="#definition-AddUser"> AddUser </a>
           <a href="#definition-RemoveUser"> RemoveUser </a>
           <a href="#definition-AddGroup"> AddGroup </a>
           <a href="#definition-RemoveGroup"> RemoveGroup </a>
           <a href="#definition-JoinGroups"> JoinGroups </a>
           <a href="#definition-LeaveGroups"> LeaveGroups </a>
+          <a href="#definition-GetMembers"> GetMembers </a>
+          <a href="#definition-GetGroups"> GetGroups </a>
+          <a href="#definition-GetUsers"> GetUsers </a>
+          <a href="#definition-UsersResult"> UsersResult </a>
+          <a href="#definition-GroupsResult"> GroupsResult </a>
         </nav>
       </div>
       <div id="docs" class="row collapse expanded drawer" data-drawer>
@@ -284,10 +319,392 @@
               <div class="doc-examples"> </div>
             </div>
           </div>
+          <div id="operation--get-groups-post" class="operation panel" data-traverse-target="operation--get-groups-post">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
+              <!--, -->
+              <a class="label" href="#tag-Consumers">Consumers</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Get groups/roles.</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">POST</span>
+                  <span class="operation-path">/get-groups</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Get all groups/roles or groups/roles of a given consumer.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-body">
+                  <div class="prop-row">
+                    <div class="prop-name">
+                      <div class="swagger-request-model">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/GetGroups">GetGroups</a>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="prop-value columns small-6">
+                      <!-- <div class="swagger-request-description"> -->
+                      <p>Parameters in json</p>
+                      <!-- </div> -->
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Request Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>
+}
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                      <div class="prop-ref">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/GroupsResult">GroupsResult</a>
+                        </span>
+                      </div>
+                      <!-- <span class="swagger-global"></span> <span class="json-schema-reference"><a href=""></a></span> -->
+                    </div>
+                    <div class="prop-value">
+                      <p>Groups/roles as requested.</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(200 OK)</span>
+                  </h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Administrators&quot;</span>
+]
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="operation--get-groups-get" class="operation panel" data-traverse-target="operation--get-groups-get">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
+              <!--, -->
+              <a class="label" href="#tag-Consumers">Consumers</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Get groups/roles.</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">GET</span>
+                  <span class="operation-path">/get-groups</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Get all groups/roles or groups/roles of a given consumer.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-params">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">groupname:
+                        <span class="prop-type">
+                          <span class="json-property-type">string</span>
+                          <span class="json-property-range" title="Value limits"></span>
+                        </span>
+                      </div>
+                      <div class="prop-subtitle"> in query </div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Group/Role identifier to be used in this operation.</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples"></div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                      <div class="prop-ref">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/GroupsResult">GroupsResult</a>
+                        </span>
+                      </div>
+                      <!-- <span class="swagger-global"></span> <span class="json-schema-reference"><a href=""></a></span> -->
+                    </div>
+                    <div class="prop-value">
+                      <p>Groups/roles as requested.</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(200 OK)</span>
+                  </h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Administrators&quot;</span>
+]
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="operation--get-users-post" class="operation panel" data-traverse-target="operation--get-users-post">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
+              <!--, -->
+              <a class="label" href="#tag-Consumers">Consumers</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Get consumers.</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">POST</span>
+                  <span class="operation-path">/get-users</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Get all consumers or consumers that are members of the given group / assigned to given role.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-body">
+                  <div class="prop-row">
+                    <div class="prop-name">
+                      <div class="swagger-request-model">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/GetUsers">GetUsers</a>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="prop-value columns small-6">
+                      <!-- <div class="swagger-request-description"> -->
+                      <p>Parameters in json</p>
+                      <!-- </div> -->
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Request Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
+  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>
+}
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                      <div class="prop-ref">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/UsersResult">UsersResult</a>
+                        </span>
+                      </div>
+                      <!-- <span class="swagger-global"></span> <span class="json-schema-reference"><a href=""></a></span> -->
+                    </div>
+                    <div class="prop-value">
+                      <p>Consumers as requested.</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(200 OK)</span>
+                  </h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Alice&quot;</span>
+]
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="operation--get-users-get" class="operation panel" data-traverse-target="operation--get-users-get">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
+              <!--, -->
+              <a class="label" href="#tag-Consumers">Consumers</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Get consumers.</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">GET</span>
+                  <span class="operation-path">/get-users</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Get all consumers or consumers that are members of the given group / assigned to given role.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-params">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">username:
+                        <span class="prop-type">
+                          <span class="json-property-type">string</span>
+                          <span class="json-property-range" title="Value limits"></span>
+                        </span>
+                      </div>
+                      <div class="prop-subtitle"> in query </div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Consumer identifier to be used in this operation.</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples"></div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                      <div class="prop-ref">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/UsersResult">UsersResult</a>
+                        </span>
+                      </div>
+                      <!-- <span class="swagger-global"></span> <span class="json-schema-reference"><a href=""></a></span> -->
+                    </div>
+                    <div class="prop-value">
+                      <p>Consumers as requested.</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(200 OK)</span>
+                  </h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Alice&quot;</span>
+]
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
           <h1 id="tag-Groups-Roles" class="swagger-summary-tag" data-traverse-target="tag-Groups-Roles">Groups/Roles</h1>
           <div class="tag-description doc-row">
             <div class="doc-copy">
-              <p>Operations about groups.</p>
+              <p>Operations about groups/roles. Group and role has the same meaning in this context which is simply a group of consumers who has common permissions set for the group.</p>
             </div>
           </div>
           <div id="operation--add-group-post" class="operation panel" data-traverse-target="operation--add-group-post">
@@ -396,7 +813,7 @@
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-operation-description">
-                  <p>Removes the group and removes all data that was connected to the group, including rules.</p>
+                  <p>Removes the group and removes all data that was connected to the group, including permissions.</p>
                 </section>
               </div>
             </div>
@@ -624,37 +1041,30 @@
               <div class="doc-examples"> </div>
             </div>
           </div>
-          <h1 id="tag-Rules" class="swagger-summary-tag" data-traverse-target="tag-Rules">Rules</h1>
-          <div class="tag-description doc-row">
-            <div class="doc-copy">
-              <p>Operations about permission Rules.</p>
-            </div>
-          </div>
-          <div id="operation--set-rules-post" class="operation panel" data-traverse-target="operation--set-rules-post">
+          <div id="operation--get-members-post" class="operation panel" data-traverse-target="operation--get-members-post">
             <!-- <section class="operation-tags row"> -->
             <!-- <div class="doc-copy"> -->
             <div class="operation-tags">
-              <a class="label" href="#tag-Rules">Rules</a>
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
               <!---->
             </div>
             <!-- </div> -->
             <!-- </section> -->
             <h2 class="operation-title">
-              <span class="operation-summary">Set rules for group/role</span>
+              <span class="operation-summary">Get members of a group</span>
             </h2>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-operation-path">
                   <span class="operation-method">POST</span>
-                  <span class="operation-path">/set-rules</span>
+                  <span class="operation-path">/get-members</span>
                 </section>
               </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-operation-description">
-                  <p>Set permission rules for a group/role. These are seperated in allow and deny rules. In O-MI Node the rules are prosessed by first filtering the incoming request by allow rules and then filtering with the deny rules from the result.</p>
-                  <p>To set rules for consumer, it either needs to be added to groups or the automatic <code>username_USERGROUP</code> can be used.</p>
+                  <p>Get all consumers who belong to the given group/assigned to role.</p>
                 </section>
               </div>
             </div>
@@ -665,7 +1075,549 @@
                     <div class="prop-name">
                       <div class="swagger-request-model">
                         <span class="">
-                          <a class="json-schema-ref" href="#/definitions/SetRules">SetRules</a>
+                          <a class="json-schema-ref" href="#/definitions/GetMembers">GetMembers</a>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="prop-value columns small-6">
+                      <!-- <div class="swagger-request-description"> -->
+                      <p>Parameters in json</p>
+                      <!-- </div> -->
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Request Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
+  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>
+}
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>OK</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples"> </div>
+            </div>
+          </div>
+          <div id="operation--get-members-get" class="operation panel" data-traverse-target="operation--get-members-get">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Get members of a group</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">GET</span>
+                  <span class="operation-path">/get-members</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Get all consumers who belong to the given group/assigned to role.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-params">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">groupname:
+                        <span class="prop-type">
+                          <span class="json-property-type">string</span>
+                          <span class="json-property-range" title="Value limits"></span>
+                        </span>
+                      </div>
+                      <div class="prop-subtitle"> in query </div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Group/Role identifier to be used in this operation.</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples"></div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>OK</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples"> </div>
+            </div>
+          </div>
+          <div id="operation--get-groups-post" class="operation panel" data-traverse-target="operation--get-groups-post">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
+              <!--, -->
+              <a class="label" href="#tag-Consumers">Consumers</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Get groups/roles.</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">POST</span>
+                  <span class="operation-path">/get-groups</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Get all groups/roles or groups/roles of a given consumer.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-body">
+                  <div class="prop-row">
+                    <div class="prop-name">
+                      <div class="swagger-request-model">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/GetGroups">GetGroups</a>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="prop-value columns small-6">
+                      <!-- <div class="swagger-request-description"> -->
+                      <p>Parameters in json</p>
+                      <!-- </div> -->
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Request Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>
+}
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                      <div class="prop-ref">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/GroupsResult">GroupsResult</a>
+                        </span>
+                      </div>
+                      <!-- <span class="swagger-global"></span> <span class="json-schema-reference"><a href=""></a></span> -->
+                    </div>
+                    <div class="prop-value">
+                      <p>Groups/roles as requested.</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(200 OK)</span>
+                  </h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Administrators&quot;</span>
+]
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="operation--get-groups-get" class="operation panel" data-traverse-target="operation--get-groups-get">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
+              <!--, -->
+              <a class="label" href="#tag-Consumers">Consumers</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Get groups/roles.</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">GET</span>
+                  <span class="operation-path">/get-groups</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Get all groups/roles or groups/roles of a given consumer.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-params">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">groupname:
+                        <span class="prop-type">
+                          <span class="json-property-type">string</span>
+                          <span class="json-property-range" title="Value limits"></span>
+                        </span>
+                      </div>
+                      <div class="prop-subtitle"> in query </div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Group/Role identifier to be used in this operation.</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples"></div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                      <div class="prop-ref">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/GroupsResult">GroupsResult</a>
+                        </span>
+                      </div>
+                      <!-- <span class="swagger-global"></span> <span class="json-schema-reference"><a href=""></a></span> -->
+                    </div>
+                    <div class="prop-value">
+                      <p>Groups/roles as requested.</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(200 OK)</span>
+                  </h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Administrators&quot;</span>
+]
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="operation--get-users-post" class="operation panel" data-traverse-target="operation--get-users-post">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
+              <!--, -->
+              <a class="label" href="#tag-Consumers">Consumers</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Get consumers.</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">POST</span>
+                  <span class="operation-path">/get-users</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Get all consumers or consumers that are members of the given group / assigned to given role.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-body">
+                  <div class="prop-row">
+                    <div class="prop-name">
+                      <div class="swagger-request-model">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/GetUsers">GetUsers</a>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="prop-value columns small-6">
+                      <!-- <div class="swagger-request-description"> -->
+                      <p>Parameters in json</p>
+                      <!-- </div> -->
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Request Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
+  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>
+}
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                      <div class="prop-ref">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/UsersResult">UsersResult</a>
+                        </span>
+                      </div>
+                      <!-- <span class="swagger-global"></span> <span class="json-schema-reference"><a href=""></a></span> -->
+                    </div>
+                    <div class="prop-value">
+                      <p>Consumers as requested.</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(200 OK)</span>
+                  </h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Alice&quot;</span>
+]
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="operation--get-users-get" class="operation panel" data-traverse-target="operation--get-users-get">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Groups-Roles">Groups/Roles</a>
+              <!--, -->
+              <a class="label" href="#tag-Consumers">Consumers</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Get consumers.</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">GET</span>
+                  <span class="operation-path">/get-users</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Get all consumers or consumers that are members of the given group / assigned to given role.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-params">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">username:
+                        <span class="prop-type">
+                          <span class="json-property-type">string</span>
+                          <span class="json-property-range" title="Value limits"></span>
+                        </span>
+                      </div>
+                      <div class="prop-subtitle"> in query </div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Consumer identifier to be used in this operation.</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples"></div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-responses">
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">200 OK</div>
+                      <div class="prop-ref">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/UsersResult">UsersResult</a>
+                        </span>
+                      </div>
+                      <!-- <span class="swagger-global"></span> <span class="json-schema-reference"><a href=""></a></span> -->
+                    </div>
+                    <div class="prop-value">
+                      <p>Consumers as requested.</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">400 Bad Request</div>
+                    </div>
+                    <div class="prop-value">
+                      <p>Invalid input</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(200 OK)</span>
+                  </h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Alice&quot;</span>
+]
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <h1 id="tag-Permissions" class="swagger-summary-tag" data-traverse-target="tag-Permissions">Permissions</h1>
+          <div class="tag-description doc-row">
+            <div class="doc-copy">
+              <p>Operations about permissions.</p>
+            </div>
+          </div>
+          <div id="operation--set-permissions-post" class="operation panel" data-traverse-target="operation--set-permissions-post">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Permissions">Permissions</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-title">
+              <span class="operation-summary">Set permissions for group/role</span>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-path">
+                  <span class="operation-method">POST</span>
+                  <span class="operation-path">/set-permissions</span>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description">
+                  <p>Set permissions for a group/role. These are seperated in allow and deny permissions. In O-MI Node the permissions are prosessed by first filtering the incoming request by allow permissions and then filtering with the deny permissions from the result.</p>
+                  <p>To set permissions for consumer, it either needs to be added to groups or the automatically created <code>username_USERGROUP</code> can be used.</p>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-body">
+                  <div class="prop-row">
+                    <div class="prop-name">
+                      <div class="swagger-request-model">
+                        <span class="">
+                          <a class="json-schema-ref" href="#/definitions/SetPermissions">SetPermissions</a>
                         </span>
                       </div>
                     </div>
@@ -682,7 +1634,7 @@
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
   <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>,
-  <span class="hljs-attr">&quot;rules&quot;</span>: [
+  <span class="hljs-attr">&quot;permissions&quot;</span>: [
     {
       <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
       <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>,
@@ -719,23 +1671,23 @@
               <div class="doc-examples"> </div>
             </div>
           </div>
-          <div id="operation--remove-rules-post" class="operation panel" data-traverse-target="operation--remove-rules-post">
+          <div id="operation--remove-permissions-post" class="operation panel" data-traverse-target="operation--remove-permissions-post">
             <!-- <section class="operation-tags row"> -->
             <!-- <div class="doc-copy"> -->
             <div class="operation-tags">
-              <a class="label" href="#tag-Rules">Rules</a>
+              <a class="label" href="#tag-Permissions">Permissions</a>
               <!---->
             </div>
             <!-- </div> -->
             <!-- </section> -->
             <h2 class="operation-title">
-              <span class="operation-summary">Remove rules from group/role</span>
+              <span class="operation-summary">Remove permissions from group/role</span>
             </h2>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-operation-path">
                   <span class="operation-method">POST</span>
-                  <span class="operation-path">/remove-rules</span>
+                  <span class="operation-path">/remove-permissions</span>
                 </section>
               </div>
             </div>
@@ -746,7 +1698,7 @@
                     <div class="prop-name">
                       <div class="swagger-request-model">
                         <span class="">
-                          <a class="json-schema-ref" href="#/definitions/RemoveRules">RemoveRules</a>
+                          <a class="json-schema-ref" href="#/definitions/RemovePermissions">RemovePermissions</a>
                         </span>
                       </div>
                     </div>
@@ -763,7 +1715,7 @@
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
   <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>,
-  <span class="hljs-attr">&quot;rules&quot;</span>: [
+  <span class="hljs-attr">&quot;permissions&quot;</span>: [
     {
       <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
       <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>
@@ -803,13 +1755,13 @@
             <!-- <section class="operation-tags row"> -->
             <!-- <div class="doc-copy"> -->
             <div class="operation-tags">
-              <a class="label" href="#tag-Rules">Rules</a>
+              <a class="label" href="#tag-Permissions">Permissions</a>
               <!---->
             </div>
             <!-- </div> -->
             <!-- </section> -->
             <h2 class="operation-title">
-              <span class="operation-summary">Get rules of a consumer and a request type</span>
+              <span class="operation-summary">Get permissions of a consumer and a request type</span>
             </h2>
             <div class="doc-row">
               <div class="doc-copy">
@@ -823,11 +1775,12 @@
               <div class="doc-copy">
                 <section class="swagger-operation-description">
                   <p>Permissions of a consumer for a request type. This operation should be used by O-MI Node for authorization, meaning the result is compatible with Authorization API service v2.</p>
+                  <p>Optianally, some extra groups can be given to be included in the results. This is meant for the use case where the roles are given by the authentication module (identity manager).</p>
                   <p>If the consumer has connections to many groups/roles (with
-                    <a href="#operation--join-groups-post">join-groups</a>) and they have many rules, the rules are concatenated in the following way:</p>
+                    <a href="#operation--join-groups-post">join-groups</a>) and they have many permissions, the permissions are concatenated in the following way:</p>
                   <ul>
-                    <li>allow rules are combined with set union</li>
-                    <li>deny rules are combined with set intersection</li>
+                    <li>allow permissions are combined with set union</li>
+                    <li>deny permissions are combined with set intersection</li>
                   </ul>
                   <p>Hierarchical structure of the O-DF paths is taken into account when doing these set operations. This way the consumer, belonging to a certain group, can not lose any permissions in that group just by joining other groups.</p>
                 </section>
@@ -857,7 +1810,10 @@
                   <h5>Request Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
   <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>,
-  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;w&quot;</span>
+  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;w&quot;</span>,
+  <span class="hljs-attr">&quot;groups&quot;</span>: [
+    <span class="hljs-string">&quot;Administrators&quot;</span>
+  ]
 }
 </code></pre>
                   <!-- </div> -->
@@ -878,7 +1834,7 @@
                       <!-- <span class="swagger-global"></span> <span class="json-schema-reference"><a href=""></a></span> -->
                     </div>
                     <div class="prop-value">
-                      <p>Rules aggregated for given consumer and request</p>
+                      <p>Permissions aggregated for given consumer and request</p>
                     </div>
                   </div>
                   <div class="prop-row prop-group">
@@ -914,7 +1870,8 @@
           <div id="definition-Request" class="definition panel" data-traverse-target="definition-Request">
             <h2 class="panel-title">
               <a name="/definitions/Request"></a>Request: string
-              <!-- <span class="json-property-type"><span class="json-property-type">string</span>  <span class="json-property-enum" title="Possible values">
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">string</span>  <span class="json-property-enum" title="Possible values">
                       <span class="json-property-enum-item">r</span>,
                       <span class="json-property-enum-item">w</span>,
                       <span class="json-property-enum-item">c</span>,
@@ -935,7 +1892,7 @@
                     <li><code>c</code> for call request</li>
                     <li><code>d</code> for delete request</li>
                   </ul>
-                  <p>When setting new rules, many request types can be used by concatenating them.</p>
+                  <p>When setting new permissions, many request types can be used by concatenating them.</p>
                 </section>
                 <span class="json-property-type">string</span>
                 <span class="json-property-enum" title="Possible values">
@@ -951,7 +1908,8 @@
           <div id="definition-GetPermissions" class="definition panel" data-traverse-target="definition-GetPermissions">
             <h2 class="panel-title">
               <a name="/definitions/GetPermissions"></a>GetPermissions: object
-              <!-- <span class="json-property-type"><span class="json-property-type">object</span>
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
               <span class="json-property-range" title="Value limits"></span>
               
               
@@ -960,7 +1918,7 @@
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-description">
-                  <p>Permissions of a consumer for a request type. This operation is used by O-MI Node for authorization.</p>
+                  <p>Permissions of a consumer for a request type. This operation is used by O-MI Node for authorization. <code>groups</code> are optional.</p>
                 </section>
                 <section class="json-schema-properties">
                   <dl>
@@ -983,6 +1941,25 @@
                       <span class="json-property-range" title="Value limits"></span>
                       <span class="json-property-required"></span>
                     </dt>
+                    <dt data-property-name="groups" class="has-description">
+                      <span class="json-property-name">groups:</span>
+                      <span class="json-property-type">string[]</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                    </dt>
+                    <dd>
+                      <p>List of group/role identifiers to be used in this operation.</p>
+                    </dd>
+                    <dt class="json-inner-schema">
+                      <section class="json-schema-array-items">
+                        <span class="json-property-type">string</span>
+                        <span class="json-property-range" title="Value limits"></span>
+                        <div class="json-inner-schema">
+                          <section class="json-schema-description">
+                            <p>Group/Role identifier to be used in this operation.</p>
+                          </section>
+                        </div>
+                      </section>
+                    </dt>
                   </dl>
                 </section>
               </div>
@@ -991,7 +1968,10 @@
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
   <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>,
-  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;w&quot;</span>
+  <span class="hljs-attr">&quot;request&quot;</span>: <span class="hljs-string">&quot;w&quot;</span>,
+  <span class="hljs-attr">&quot;groups&quot;</span>: [
+    <span class="hljs-string">&quot;Administrators&quot;</span>
+  ]
 }
 </code></pre>
                   <!-- </div> -->
@@ -1002,7 +1982,8 @@
           <div id="definition-PermissionResult" class="definition panel" data-traverse-target="definition-PermissionResult">
             <h2 class="panel-title">
               <a name="/definitions/PermissionResult"></a>PermissionResult: object
-              <!-- <span class="json-property-type"><span class="json-property-type">object</span>
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
               <span class="json-property-range" title="Value limits"></span>
               
               
@@ -1016,6 +1997,7 @@
                       <span class="json-property-name">allowed:</span>
                       <span class="json-property-type">string[]</span>
                       <span class="json-property-range" title="Value limits"></span>
+                      <span class="json-property-required"></span>
                     </dt>
                     <dd>
                       <p>Paths that are allowed for the consumer.</p>
@@ -1035,6 +2017,7 @@
                       <span class="json-property-name">denied:</span>
                       <span class="json-property-type">string[]</span>
                       <span class="json-property-range" title="Value limits"></span>
+                      <span class="json-property-required"></span>
                     </dt>
                     <dd>
                       <p>Paths that are disallowed for the consumer.</p>
@@ -1070,10 +2053,11 @@
               </div>
             </div>
           </div>
-          <div id="definition-Rule" class="definition panel" data-traverse-target="definition-Rule">
+          <div id="definition-Permission" class="definition panel" data-traverse-target="definition-Permission">
             <h2 class="panel-title">
-              <a name="/definitions/Rule"></a>Rule: object
-              <!-- <span class="json-property-type"><span class="json-property-type">object</span>
+              <a name="/definitions/Permission"></a>Permission: object
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
               <span class="json-property-range" title="Value limits"></span>
               
               
@@ -1099,7 +2083,7 @@
                       <span class="json-property-required"></span>
                     </dt>
                     <dd>
-                      <p>Set to <code>true</code> to make an allow rule or <code>false</code> to make a deny rule.</p>
+                      <p>Set to <code>true</code> to make an allow permission or <code>false</code> to make a deny permission.</p>
                     </dd>
                     <dt data-property-name="request">
                       <span class="json-property-name">request:</span>
@@ -1128,10 +2112,11 @@
               </div>
             </div>
           </div>
-          <div id="definition-SetRules" class="definition panel" data-traverse-target="definition-SetRules">
+          <div id="definition-SetPermissions" class="definition panel" data-traverse-target="definition-SetPermissions">
             <h2 class="panel-title">
-              <a name="/definitions/SetRules"></a>SetRules: object
-              <!-- <span class="json-property-type"><span class="json-property-type">object</span>
+              <a name="/definitions/SetPermissions"></a>SetPermissions: object
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
               <span class="json-property-range" title="Value limits"></span>
               
               
@@ -1150,11 +2135,11 @@
                     <dd>
                       <p>Group/Role identifier to be used in this operation.</p>
                     </dd>
-                    <dt data-property-name="rules">
-                      <span class="json-property-name">rules:</span>
+                    <dt data-property-name="permissions">
+                      <span class="json-property-name">permissions:</span>
                       <span class="json-property-type">
                         <span class="json-schema-ref-array">
-                          <a class="json-schema-ref" href="#/definitions/Rule">Rule</a>
+                          <a class="json-schema-ref" href="#/definitions/Permission">Permission</a>
                         </span>
                       </span>
                       <span class="json-property-range" title="Value limits"></span>
@@ -1164,7 +2149,7 @@
                       <section class="json-schema-array-items">
                         <span class="json-property-type">
                           <span class="">
-                            <a class="json-schema-ref" href="#/definitions/Rule">Rule</a>
+                            <a class="json-schema-ref" href="#/definitions/Permission">Permission</a>
                           </span>
                         </span>
                         <span class="json-property-range" title="Value limits"></span>
@@ -1179,7 +2164,7 @@
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
   <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>,
-  <span class="hljs-attr">&quot;rules&quot;</span>: [
+  <span class="hljs-attr">&quot;permissions&quot;</span>: [
     {
       <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
       <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>,
@@ -1193,10 +2178,11 @@
               </div>
             </div>
           </div>
-          <div id="definition-RRule" class="definition panel" data-traverse-target="definition-RRule">
+          <div id="definition-RPermission" class="definition panel" data-traverse-target="definition-RPermission">
             <h2 class="panel-title">
-              <a name="/definitions/RRule"></a>RRule: object
-              <!-- <span class="json-property-type"><span class="json-property-type">object</span>
+              <a name="/definitions/RPermission"></a>RPermission: object
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
               <span class="json-property-range" title="Value limits"></span>
               
               
@@ -1222,7 +2208,7 @@
                       <span class="json-property-required"></span>
                     </dt>
                     <dd>
-                      <p>Set to <code>true</code> to make an allow rule or <code>false</code> to make a deny rule.</p>
+                      <p>Set to <code>true</code> to make an allow permission or <code>false</code> to make a deny permission.</p>
                     </dd>
                   </dl>
                 </section>
@@ -1240,10 +2226,11 @@
               </div>
             </div>
           </div>
-          <div id="definition-RemoveRules" class="definition panel" data-traverse-target="definition-RemoveRules">
+          <div id="definition-RemovePermissions" class="definition panel" data-traverse-target="definition-RemovePermissions">
             <h2 class="panel-title">
-              <a name="/definitions/RemoveRules"></a>RemoveRules: object
-              <!-- <span class="json-property-type"><span class="json-property-type">object</span>
+              <a name="/definitions/RemovePermissions"></a>RemovePermissions: object
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
               <span class="json-property-range" title="Value limits"></span>
               
               
@@ -1262,11 +2249,11 @@
                     <dd>
                       <p>Group/Role identifier to be used in this operation.</p>
                     </dd>
-                    <dt data-property-name="rules">
-                      <span class="json-property-name">rules:</span>
+                    <dt data-property-name="permissions">
+                      <span class="json-property-name">permissions:</span>
                       <span class="json-property-type">
                         <span class="json-schema-ref-array">
-                          <a class="json-schema-ref" href="#/definitions/RRule">RRule</a>
+                          <a class="json-schema-ref" href="#/definitions/RPermission">RPermission</a>
                         </span>
                       </span>
                       <span class="json-property-range" title="Value limits"></span>
@@ -1276,7 +2263,7 @@
                       <section class="json-schema-array-items">
                         <span class="json-property-type">
                           <span class="">
-                            <a class="json-schema-ref" href="#/definitions/RRule">RRule</a>
+                            <a class="json-schema-ref" href="#/definitions/RPermission">RPermission</a>
                           </span>
                         </span>
                         <span class="json-property-range" title="Value limits"></span>
@@ -1291,7 +2278,7 @@
                   <h5>Example</h5>
                   <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
   <span class="hljs-attr">&quot;group&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>,
-  <span class="hljs-attr">&quot;rules&quot;</span>: [
+  <span class="hljs-attr">&quot;permissions&quot;</span>: [
     {
       <span class="hljs-attr">&quot;path&quot;</span>: <span class="hljs-string">&quot;/Objects/MyObject/MyInfoItem&quot;</span>,
       <span class="hljs-attr">&quot;allow&quot;</span>: <span class="hljs-literal">true</span>
@@ -1307,7 +2294,8 @@
           <div id="definition-AddUser" class="definition panel" data-traverse-target="definition-AddUser">
             <h2 class="panel-title">
               <a name="/definitions/AddUser"></a>AddUser: object
-              <!-- <span class="json-property-type"><span class="json-property-type">object</span>
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
               <span class="json-property-range" title="Value limits"></span>
               
               
@@ -1344,7 +2332,9 @@
           <div id="definition-RemoveUser" class="definition panel" data-traverse-target="definition-RemoveUser">
             <h2 class="panel-title">
               <a name="/definitions/RemoveUser"></a>RemoveUser:
-              <!-- <span class="json-property-type"><span class="json-property-type">  <span class="">
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">
+                <span class="">
                   <a class="json-schema-ref" href="#/definitions/AddUser">AddUser</a>
                 </span>
               </span>
@@ -1371,7 +2361,8 @@
           <div id="definition-AddGroup" class="definition panel" data-traverse-target="definition-AddGroup">
             <h2 class="panel-title">
               <a name="/definitions/AddGroup"></a>AddGroup: object
-              <!-- <span class="json-property-type"><span class="json-property-type">object</span>
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
               <span class="json-property-range" title="Value limits"></span>
               
               
@@ -1408,7 +2399,9 @@
           <div id="definition-RemoveGroup" class="definition panel" data-traverse-target="definition-RemoveGroup">
             <h2 class="panel-title">
               <a name="/definitions/RemoveGroup"></a>RemoveGroup:
-              <!-- <span class="json-property-type"><span class="json-property-type">  <span class="">
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">
+                <span class="">
                   <a class="json-schema-ref" href="#/definitions/AddGroup">AddGroup</a>
                 </span>
               </span>
@@ -1435,7 +2428,8 @@
           <div id="definition-JoinGroups" class="definition panel" data-traverse-target="definition-JoinGroups">
             <h2 class="panel-title">
               <a name="/definitions/JoinGroups"></a>JoinGroups: object
-              <!-- <span class="json-property-type"><span class="json-property-type">object</span>
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
               <span class="json-property-range" title="Value limits"></span>
               
               
@@ -1495,7 +2489,9 @@
           <div id="definition-LeaveGroups" class="definition panel" data-traverse-target="definition-LeaveGroups">
             <h2 class="panel-title">
               <a name="/definitions/LeaveGroups"></a>LeaveGroups:
-              <!-- <span class="json-property-type"><span class="json-property-type">  <span class="">
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">
+                <span class="">
                   <a class="json-schema-ref" href="#/definitions/JoinGroups">JoinGroups</a>
                 </span>
               </span>
@@ -1514,6 +2510,198 @@
                 <section>
                   <h5>Example</h5>
                   <!-- <div class="hljs"> -->
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-GetMembers" class="definition panel" data-traverse-target="definition-GetMembers">
+            <h2 class="panel-title">
+              <a name="/definitions/GetMembers"></a>GetMembers: object
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
+              <span class="json-property-range" title="Value limits"></span>
+              
+              
+              </span> -->
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties">
+                  <dl>
+                    <dt data-property-name="groupname" class="has-description">
+                      <span class="json-property-name">groupname:</span>
+                      <span class="json-property-type">string</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                      <span class="json-property-required"></span>
+                    </dt>
+                    <dd>
+                      <p>Group/Role identifier to be used in this operation.</p>
+                    </dd>
+                  </dl>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
+  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>
+}
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-GetGroups" class="definition panel" data-traverse-target="definition-GetGroups">
+            <h2 class="panel-title">
+              <a name="/definitions/GetGroups"></a>GetGroups: object
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
+              <span class="json-property-range" title="Value limits"></span>
+              
+              
+              </span> -->
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-description">
+                  <p><code>username</code> is optional: if not given, returns all groups in the database, if given, it returns groups of the given user.</p>
+                </section>
+                <section class="json-schema-properties">
+                  <dl>
+                    <dt data-property-name="username" class="has-description">
+                      <span class="json-property-name">username:</span>
+                      <span class="json-property-type">string</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                    </dt>
+                    <dd>
+                      <p>Consumer identifier to be used for this operation</p>
+                    </dd>
+                  </dl>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
+  <span class="hljs-attr">&quot;username&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>
+}
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-GetUsers" class="definition panel" data-traverse-target="definition-GetUsers">
+            <h2 class="panel-title">
+              <a name="/definitions/GetUsers"></a>GetUsers: object
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">object</span>
+              <span class="json-property-range" title="Value limits"></span>
+              
+              
+              </span> -->
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-description">
+                  <p><code>groupname</code> is optional: if not given, return all users in the database, if given, returns users in the given group.</p>
+                </section>
+                <section class="json-schema-properties">
+                  <dl>
+                    <dt data-property-name="groupname" class="has-description">
+                      <span class="json-property-name">groupname:</span>
+                      <span class="json-property-type">string</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                    </dt>
+                    <dd>
+                      <p>Group/Role identifier to be used in this operation.</p>
+                    </dd>
+                  </dl>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">{
+  <span class="hljs-attr">&quot;groupname&quot;</span>: <span class="hljs-string">&quot;Administrators&quot;</span>
+}
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-UsersResult" class="definition panel" data-traverse-target="definition-UsersResult">
+            <h2 class="panel-title">
+              <a name="/definitions/UsersResult"></a>UsersResult: array
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">string[]</span>
+              <span class="json-property-range" title="Value limits"></span>
+              
+              
+              </span> -->
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-description">
+                  <p>List of consumers identifiers</p>
+                </section>
+                <section class="json-schema-array-items">
+                  <span class="json-property-type">string</span>
+                  <span class="json-property-range" title="Value limits"></span>
+                  <div class="json-inner-schema">
+                    <section class="json-schema-description">
+                      <p>Consumer identifier to be used for this operation</p>
+                    </section>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Alice&quot;</span>
+]
+</code></pre>
+                  <!-- </div> -->
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-GroupsResult" class="definition panel" data-traverse-target="definition-GroupsResult">
+            <h2 class="panel-title">
+              <a name="/definitions/GroupsResult"></a>GroupsResult: array
+              <!-- <span class="json-property-type">
+              <span class="json-property-type">string[]</span>
+              <span class="json-property-range" title="Value limits"></span>
+              
+              
+              </span> -->
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-description">
+                  <p>List of group/role names</p>
+                </section>
+                <section class="json-schema-array-items">
+                  <span class="json-property-type">string</span>
+                  <span class="json-property-range" title="Value limits"></span>
+                  <div class="json-inner-schema">
+                    <section class="json-schema-description">
+                      <p>Group/Role identifier to be used in this operation.</p>
+                    </section>
+                  </div>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <!-- <div class="hljs"> --><pre><code class="hljs lang-json">[
+  <span class="hljs-string">&quot;Administrators&quot;</span>
+]
+</code></pre>
                   <!-- </div> -->
                 </section>
               </div>

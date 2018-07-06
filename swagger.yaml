@@ -17,9 +17,9 @@ tags:
   #  description: "Find out more"
   #  url: "http://swagger.io"
 - name: "Groups/Roles"
-  description: "Operations about groups."
+  description: "Operations about groups/roles. Group and role has the same meaning in this context which is simply a group of consumers who has common permissions set for the group."
 - name: "Permissions"
-  description: "Operations about permission Permissions."
+  description: "Operations about permissions."
   
 consumes:
   - application/json
@@ -164,6 +164,141 @@ paths:
           description: "OK"
         400:
           description: "Invalid input"
+  /get-members:
+    post:
+      tags:
+      - "Groups/Roles"
+      summary: "Get members of a group"
+      description: |
+        Get all consumers who belong to the given group/assigned to role.
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Parameters in json"
+        required: true
+        schema:
+          $ref: "#/definitions/GetMembers"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
+    get:
+      tags:
+      - "Groups/Roles"
+      summary: "Get members of a group"
+      description: |
+        Get all consumers who belong to the given group/assigned to role.
+
+      parameters:
+      - in: query
+        name: groupname
+        type: string
+        description: "Group/Role identifier to be used in this operation."
+        #example: "Administrators"
+        required: false
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Invalid input"
+
+  /get-groups:
+    post:
+      tags:
+      - "Groups/Roles"
+      - "Consumers"
+      summary: "Get groups/roles."
+      description: |
+        Get all groups/roles or groups/roles of a given consumer.
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Parameters in json"
+        required: true
+        schema:
+          $ref: "#/definitions/GetGroups"
+      responses:
+        200:
+          description: "Groups/roles as requested."
+          schema:
+            $ref: "#/definitions/GroupsResult"
+        400:
+          description: "Invalid input"
+    get:
+      tags:
+      - "Groups/Roles"
+      - "Consumers"
+      summary: "Get groups/roles."
+      description: |
+        Get all groups/roles or groups/roles of a given consumer.
+
+      parameters:
+      - in: query
+        name: groupname
+        type: string
+        description: "Group/Role identifier to be used in this operation."
+        #example: "Administrators"
+        required: false
+      responses:
+        200:
+          description: "Groups/roles as requested."
+          schema:
+            $ref: "#/definitions/GroupsResult"
+        400:
+          description: "Invalid input"
+
+  /get-users:
+    post:
+      tags:
+      - "Groups/Roles"
+      - "Consumers"
+      summary: "Get consumers."
+      description: |
+        Get all consumers or consumers that are members of the given group /
+        assigned to given role.
+
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Parameters in json"
+        required: true
+        schema:
+          $ref: "#/definitions/GetUsers"
+      responses:
+        200:
+          description: "Consumers as requested."
+          schema:
+            $ref: "#/definitions/UsersResult"
+        400:
+          description: "Invalid input"
+    get:
+      tags:
+      - "Groups/Roles"
+      - "Consumers"
+      summary: "Get consumers."
+      description: |
+        Get all consumers or consumers that are members of the given group /
+        assigned to given role.
+
+      parameters:
+      - in: query
+        name: username
+        type: string
+        description: "Consumer identifier to be used in this operation."
+        #example: "Alice"
+        required: false
+      responses:
+        200:
+          description: "Consumers as requested."
+          schema:
+            $ref: "#/definitions/UsersResult"
+        400:
+          description: "Invalid input"
+
+
           
   /set-permissions:
     post:
@@ -171,13 +306,13 @@ paths:
       - "Permissions"
       summary: "Set permissions for group/role"
       description: |
-        Set permission permissions for a group/role. These are seperated in allow and
+        Set permissions for a group/role. These are seperated in allow and
         deny permissions. In O-MI Node the permissions are prosessed by first filtering the
         incoming request by allow permissions and then filtering with the deny permissions from
         the result.
 
         To set permissions for consumer, it either needs to be added to groups or the
-        automatic `username_USERGROUP` can be used.
+        automatically created `username_USERGROUP` can be used.
 
       parameters:
       - in: "body"
@@ -219,6 +354,10 @@ paths:
         Permissions of a consumer for a request type. This operation should be
         used by O-MI Node for authorization, meaning the result is compatible
         with Authorization API service v2.
+
+        Optianally, some extra groups can be given to be included in the
+        results. This is meant for the use case where the roles are given by the
+        authentication module (identity manager).
 
         If the consumer has connections to many groups/roles (with
         [join-groups](#operation--join-groups-post)) and they have many permissions,
@@ -263,7 +402,7 @@ definitions:
   GetPermissions:
     description: >
       Permissions of a consumer for a request type. This operation is used by O-MI Node 
-      for authorization.
+      for authorization. `groups` are optional.
     type: object
     required:
       - username
@@ -275,10 +414,17 @@ definitions:
         description: "Consumer identifier to be used for this operation"
       request:
         $ref: "#/definitions/Request"
+      groups: &groups
+        type: array
+        items: &groupname
+          type: string
+          description: "Group/Role identifier to be used in this operation."
+          example: "Administrators"
+        description: "List of group/role identifiers to be used in this operation."
 
   PermissionResult:
     type: object 
-    reqired:
+    required:
       - allowed
       - denied
     properties:
@@ -315,10 +461,7 @@ definitions:
       - group
       - permissions
     properties:
-      group: &groupname
-        type: string
-        description: "Group/Role identifier to be used in this operation."
-        example: "Administrators"
+      group: *groupname
       permissions:
         type: array
         items:
@@ -372,11 +515,43 @@ definitions:
       - groups
     properties:
       username: *username
-      groups:
-        type: array
-        items: *groupname
-        description: "List of group/role identifiers to be used in this operation."
+      groups: *groups
 
   LeaveGroups:
     $ref: "#/definitions/JoinGroups"
+
+  GetMembers:
+    type: object
+    required:
+      - groupname
+    properties:
+      groupname: *groupname
+
+  GetGroups:
+    type: object
+    # no required properties
+    description: |
+      `username` is optional: if not given, returns all groups in the database,
+      if given, it returns groups of the given user.
+    properties:
+      username: *username
+
+  GetUsers:
+    type: object
+    # no required properties
+    description: |
+      `groupname` is optional: if not given, return all users in the database,
+      if given, returns users in the given group.
+    properties:
+      groupname: *groupname
+
+  UsersResult:
+    type: array
+    description: "List of consumers identifiers"
+    items: *username
+
+  GroupsResult:
+    type: array
+    description: "List of group/role names"
+    items: *groupname
 
