@@ -1,0 +1,54 @@
+git:
+  depth: 2
+language: scala
+addons:
+  apt:
+    packages:
+    - fakeroot
+    - graphviz
+    - rpm
+jdk:
+- oraclejdk8
+scala:
+- 2.12.6
+branches:
+  only:
+  - master
+  - development
+  - travis
+  - "/^\\d+\\.\\d+\\.\\d+([.\\- ].*)?$/"
+cache:
+  directories:
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.sbt/boot/"
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION clean test
+    #- sbt ++$TRAVIS_SCALA_VERSION clean coverage test
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+#after_success:
+#- sbt coverageReport coveralls codacyCoverage
+#before_deploy:
+#- sbt release
+#deploy:
+#- provider: releases
+#  api_key:
+#    secure: JL6HBX4DRR5jIf7x8cTFSKZRcnjCeAq3BpVfp4gfIknaYdW+Hs9wNE075hArVzeC9BqEJX3wdymguG7zznYpcRBrTXf8OInHFoOyMNvDGn4KHuAPUDp36BrkQLCys7tyVL6rI+ySx3wACWkx0Lwr30Mijtk12JlkRk/qy9h0Nj8=
+#  file:
+#  - target/universal/o-mi-authorization-${TRAVIS_TAG}.zip
+#  - target/universal/o-mi-authorization-${TRAVIS_TAG}.tgz
+#  - target/O-MI-Authorization${TRAVIS_TAG}_all.deb
+#  - target/rpm/RPMS/noarch/o-mi-authorization-${TRAVIS_TAG}-1.noarch.rpm
+#  draft: true
+#  skip_cleanup: true
+#  overwrite: true
+#  on:
+#    tags: true
+#- provider: script
+#  script: bash docker_push
+#  on:
+#    tags: true
+
+notifications:
+  slack:
+    secure: Fea4wnIRLXtsSyTqS8Rz6hl0u4XsbZLyznZDP/GIx7mhnC2BXMPnFmtlVxJ4NaQzSPrIKY+6bDI34wQIZcamVB9HfuBecCxGfa0RBCXexr2iHf5xWLrkmdVp7H0ebmavsQMfoKCagjvTexav/kpmG90rrSVdRm8LlBHdxwikXNk77bchs4UDp7kEx7pTnMOyKoUVIMjYE8KzTYT55xyVJ1X1H751W7n0dVgvXxaLsJ2VcjouGDDCsABFpUIVk6iGjfykHitRIxR6FsAlQxmGzShAxfzx61WmCrkTvZvn7zoiD3fhcDqXbIS5wJ+J0mcFW9Q0jSe9p6ISvsw5Q5zCuzoF/7rvfVg+Pm0iMz6Xn3XQjJSKzoIg+BcX1Gk55no2B64wDwBgqzfTu2aNupc4WPlMJkSzUWVE3C5Tr+1OIG9Y9fhor5cG6gT4sEtMACd8WjoW35P9oMyYin8VMq1vAmmZ4dRJfVWvpCj6mh4sjAa8VcbgBIgt5EncXzI09JfNp0oWlYNaazIBTMqQoBDV/3925GQ109DW+VutdJnZQ43PbddckrhILR79domHJJA91THIIhS7k/xv+ot5AZL81zcdL2kFqwPgSBn/Qe6eFRFlwkl5oWnlxwKLqXbRN9cbwvR7VgVFwtHj3I3TTyjDcNlpzae3RRAiuNCbW3uZqd8=
