@@ -1,7 +1,5 @@
 package org.aalto.asia.requests
 
-import java.sql.Timestamp
-
 import org.aalto.asia.types.Path
 object RequestType extends Enumeration {
 

@@ -1,30 +1,16 @@
 package org.aalto.asia.database
 
-import java.util.Date
-import java.sql.Timestamp
-
-import scala.util.{ Try, Success, Failure }
-
-import akka.event.{ LoggingAdapter, Logging }
+import akka.event.{ LoggingAdapter }
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
-import scala.collection.mutable.{ Map => MutableMap, HashMap => MutableHashMap }
-import scala.collection.immutable.BitSet.BitSet1
 import scala.language.postfixOps
 
-import org.slf4j.LoggerFactory
 //import slick.driver.H2Driver.api._
-import slick.jdbc.meta.MTable
 
-import slick.backend.DatabaseConfig
-//import slick.driver.H2Driver.api._
-import slick.driver.JdbcProfile
-import slick.lifted.{ Index, ForeignKeyQuery, ProvenShape }
+import slick.basic.DatabaseConfig
+//import slick.driver.h2driver.api._
+import slick.jdbc.JdbcProfile
 import org.aalto.asia.types.Path
 import org.aalto.asia.requests._
-
-import Request._
 
 case class PermissionEntry(
   val groupId: Long,
@@ -52,14 +38,14 @@ case class SubGroupEntry(
 
 trait DBBase {
   val dc: DatabaseConfig[JdbcProfile] //= DatabaseConfig.forConfig[JdbcProfile](database.dbConfigName)
-  import dc.driver.api._
+  import dc.profile.api._
   val db: Database
   //protected[this] val db: Database
 }
 
 trait AuthorizationTables extends DBBase {
-  import dc.driver.api._
-  import dc.driver.api.DBIOAction
+  import dc.profile.api._
+  import dc.profile.api.DBIOAction
 
   def log: LoggingAdapter
   type DBSIOro[Result] = DBIOAction[Seq[Result], Streaming[Result], Effect.Read]
@@ -140,7 +126,6 @@ trait AuthorizationTables extends DBBase {
   class Permissions extends TableQuery[PermissionsTable](new PermissionsTable(_))
   val permissionsTable = new Permissions()
 
-  def currentTimestamp: Timestamp = new Timestamp(new Date().getTime())
   protected def getPermissionsIOA(username: String, groups: Set[String], request: Request) = {
     val user = usersTable.filter { row => row.name === username }
     val knownGroups = groupsTable.filter { row => row.name.inSet(groups ++ Set("DEFAULT")) }.map { row => row.groupId }

@@ -1,30 +1,19 @@
 package org.aalto.asia.database
 
-import java.util.Date
-import java.sql.Timestamp
-
-import scala.util.{ Try, Success, Failure }
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import akka.event.Logging
 import scala.concurrent.{ Await, Future }
-import scala.collection.mutable.{ Map => MutableMap, HashMap => MutableHashMap }
-import scala.collection.immutable.BitSet.BitSet1
-import scala.language.postfixOps
 
 import akka.actor.ActorSystem
 
-import org.slf4j.LoggerFactory
 //import slick.driver.H2Driver.api._
 import slick.jdbc.meta.MTable
 
-import slick.backend.DatabaseConfig
+import slick.basic.DatabaseConfig
 //import slick.driver.H2Driver.api._
-import slick.driver.JdbcProfile
-import slick.lifted.{ Index, ForeignKeyQuery, ProvenShape }
+import slick.jdbc.JdbcProfile
 import org.aalto.asia.types.Path
-import org.aalto.asia.AuthConfigSettings
 import org.aalto.asia.requests._
 
 class AuthorizationDB(
@@ -32,8 +21,7 @@ class AuthorizationDB(
   val system: ActorSystem) extends AuthorizationTables {
 
   val dc: DatabaseConfig[JdbcProfile] = DatabaseConfig.forConfig[JdbcProfile](database.dbConfigName)
-  import dc.driver.api._
-  import dc.driver.api.DBIOAction
+  import dc.profile.api._
   val db: Database = dc.db
   lazy val log = Logging(system, classOf[AuthorizationDB])
 
@@ -89,7 +77,7 @@ class AuthorizationDB(
               else log.info(s"DB successfully initialised")
           }) //.flatMap(_ => logGroups)
     }
-    future.onFailure {
+    future.failed.foreach {
       case t: Exception =>
         log.error(t.getMessage)
         throw t

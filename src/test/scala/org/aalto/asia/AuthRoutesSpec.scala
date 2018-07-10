@@ -2,18 +2,10 @@ package org.aalto.asia
 
 //#user-routes-spec
 //#test-top
-import akka.actor.ActorRef
-import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.ContentTypes._
 import akka.http.scaladsl.testkit.Specs2RouteTest
 import org.specs2._
-import org.specs2.matcher._
-import org.json4s._
-import org.json4s.JsonDSL._
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.{ write, read }
 
 import database._
 import requests._
@@ -129,7 +121,7 @@ class AuthRoutesSpec extends mutable.Specification with Specs2RouteTest
           entityAs[Set[String]] must contain(username)
         }
     }
-    s"should let set new rules with /set-rules" >>{
+    s"should let set new rules with /set-permissions" >>{
       Post(
         "/v1/set-permissions",
         SetPermissions(
@@ -185,6 +177,179 @@ class AuthRoutesSpec extends mutable.Specification with Specs2RouteTest
         entityAs[PermissionResult].allowed shouldEqual( Set.empty[Path])
         entityAs[PermissionResult].denied shouldEqual( Set(Path("Objects","test")))
       }
+    }
+    "should return groups permissions when additional group is given to /get-permissions" in {
+      Post(
+        "/v1/get-permissions",
+        GetPermissions(username,Write(),Set("ADMIN"))
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[PermissionResult].allowed shouldEqual( Set(Path("Objects")))
+        entityAs[PermissionResult].denied shouldEqual( Set(Path("Objects","test")))
+      }
+    }
+    "should change existing rules with /set-permissions" in {
+      Post(
+        "/v1/set-permissions",
+        SetPermissions(
+          "DEFAULT",
+          Seq(
+            Permission(Path("Objects"),Read(),true),
+            Permission(Path("Objects"),WriteCallDelete(),false)
+          )
+        )
+      ) ~> routes ~> check {
+        status shouldEqual OK
+      }
+      Post(
+        "/v1/get-permissions",
+        GetPermissions(username,Read(),Set.empty)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[PermissionResult].allowed shouldEqual Set(Path("Objects"),Path("Objects","test"))
+        entityAs[PermissionResult].denied must be empty
+      }
+      Post(
+        "/v1/get-permissions",
+        GetPermissions(username,Call(),Set.empty)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[PermissionResult].allowed shouldEqual( Set(Path("Objects","test")))
+        entityAs[PermissionResult].denied shouldEqual( Set(Path("Objects")))
+      }
+      Post(
+        "/v1/get-permissions",
+        GetPermissions(username,Write(),Set.empty)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[PermissionResult].allowed shouldEqual( Set.empty[Path])
+        entityAs[PermissionResult].denied shouldEqual( Set(Path("Objects","test")))
+      }
+      Post(
+        "/v1/get-permissions",
+        GetPermissions(username,requests.Delete(),Set.empty)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[PermissionResult].allowed shouldEqual( Set.empty[Path])
+        entityAs[PermissionResult].denied shouldEqual( Set(Path("Objects","test")))
+      }
+    }
+    s"should be able to join groups" in {
+      Post(
+        "/v1/join-groups",
+        JoinGroups(username,Set("ADMIN"))
+      ) ~> routes ~> check {
+        shouldBeOkJson
+      }
+      Post(
+        "/v1/get-users",
+        GetUsers(Some("ADMIN"))
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[Set[String]] must contain(username)
+      }
+      Post(
+        "/v1/get-permissions",
+        GetPermissions(username,Write(),Set.empty)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[PermissionResult].allowed shouldEqual( Set(Path("Objects")))
+        entityAs[PermissionResult].denied shouldEqual( Set(Path("Objects","test")))
+      }
+    }
+    s"should be able leave groups" in {
+      Post(
+        "/v1/leave-groups",
+        LeaveGroups(username,Set("ADMIN"))
+      ) ~> routes ~> check {
+        shouldBeOkJson
+      }
+      Post(
+        "/v1/get-users",
+        GetUsers(Some("ADMIN"))
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[Set[String]] must not contain(username)
+      }
+      Post(
+        "/v1/get-permissions",
+        GetPermissions(username,Write(),Set.empty)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[PermissionResult].allowed shouldEqual( Set.empty[Path])
+        entityAs[PermissionResult].denied shouldEqual( Set(Path("Objects","test")))
+      }
+    }
+    s"should be able to remove groups" in {
+      Post(
+        "/v1/remove-group",
+        RemoveGroup(groupname)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+      }
+      Post(
+        "/v1/get-groups",
+        GetGroups(None)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[Set[String]] shouldEqual( Set("ADMIN","DEFAULT",s"${username}_USERGROUP"))
+      }
+      Post(
+        "/v1/get-users",
+        GetUsers(Some(groupname))
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[Set[String]] must be empty
+      }
+      Post(
+        "/v1/get-permissions",
+        GetPermissions("unknown",Write(),Set(groupname))
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[PermissionResult].allowed shouldEqual( Set.empty[Path])
+        entityAs[PermissionResult].denied shouldEqual( Set(Path("Objects")))
+      }
+    }
+    s"should not be able to remove user groups" in {
+      Post(
+        "/v1/remove-group",
+        RemoveGroup(s"${username}_USERGROUP")
+      ) ~> routes ~> check {
+        //TODO: Specify error message and Check it
+        //println( entityAs[String] )
+        shouldBeOkJson
+
+      }
+      Post(
+        "/v1/get-groups",
+        GetGroups(None)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[Set[String]] must contain( s"${username}_USERGROUP")
+      }
+    }
+    s"should be able to remove users" in {
+      Post(
+        "/v1/remove-user",
+        RemoveUser(username)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+      }
+      Post(
+        "/v1/get-users",
+        GetUsers(None)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[Set[String]] must be empty
+      }
+      Post(
+        "/v1/get-groups",
+        GetGroups(None)
+      ) ~> routes ~> check {
+        shouldBeOkJson
+        entityAs[Set[String]] shouldEqual( Set( "DEFAULT","ADMIN"))
+      }
+
     }
   }
 }

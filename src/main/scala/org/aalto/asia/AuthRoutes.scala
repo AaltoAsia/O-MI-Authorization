@@ -1,21 +1,16 @@
 package org.aalto.asia
 
-import akka.actor.{ ActorRef, ActorSystem }
-import akka.event.{ LoggingAdapter, Logging }
+import akka.actor.{ ActorSystem }
+import akka.event.{ Logging }
 
-import scala.util.control.NonFatal
 import scala.concurrent.duration._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.directives.MethodDirectives.delete
 import akka.http.scaladsl.server.directives.MethodDirectives.get
 import akka.http.scaladsl.server.directives.MethodDirectives.post
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.http.scaladsl.server.directives.PathDirectives.path
 
 import scala.concurrent.Future
-import akka.pattern.ask
 import akka.util.Timeout
 import database._
 import org.aalto.asia.requests._
@@ -36,7 +31,7 @@ trait AuthRoutes extends JsonSupport {
       path("get-permissions") {
         entity(as[GetPermissions]) { pr =>
           val permissions: Future[PermissionResult] = authDB.getPermissions(pr.username, pr.groups, pr.request)
-          permissions.onFailure {
+          permissions.failed.foreach {
             case t: Throwable =>
               log.error(t.getMessage)
           }
@@ -69,7 +64,7 @@ trait AuthRoutes extends JsonSupport {
         }
       } ~ path("leave-groups") {
         entity(as[LeaveGroups]) { ar: LeaveGroups =>
-          val result: Future[Unit] = authDB.joinGroups(ar.username, ar.groups)
+          val result: Future[Unit] = authDB.leaveGroups(ar.username, ar.groups)
           complete(result)
         }
       } ~ path("set-permissions") {

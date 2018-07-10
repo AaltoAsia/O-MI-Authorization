@@ -4,16 +4,9 @@ package org.aalto.asia
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.{ ActorSystem }
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import org.aalto.asia.requests._
-import org.aalto.asia.types._
-import org.json4s._
-import org.json4s.JsonDSL._
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.{ write, read }
 import database._
 
 object QuickstartServer extends App with AuthRoutes with JsonSupport {
