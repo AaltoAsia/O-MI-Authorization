@@ -2,6 +2,7 @@ import Dependencies._
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
+      version         := "1.0.0",
       organization    := "org.aalto.asia",
       scalaVersion    := "2.12.6"
     )),
