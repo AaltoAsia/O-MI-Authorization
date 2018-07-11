@@ -15,7 +15,8 @@ Features
     * Permission calculation in set operations:
         1. Combine groups: `<allow-a> union <allow-b>, <deny-a> intersect <deny-b>`
         2. In O-MI Node: `<request-O-DF> intersect <allow> difference <deny>`
-- `DEFAULT` group to set default permissions for all users (and those without user account if allowed by O-MI Node/authentication service)
+- Automatic `DEFAULT` group to set default permissions for all users (and those without user account if allowed by O-MI Node/authentication service). By default it has no permissions.
+- Automatic `<username>_USERGROUP` group for each user to easily set permissions to single user. By default it has no permissions.
 - JSON REST API
 - Configurable SQL database
 
@@ -81,8 +82,8 @@ Compiling
 <!-- 2. Run tests: `sbt test`-->
 1. [Install sbt](https://www.scala-sbt.org/1.0/docs/Setup.html)
 3. run or package
-  - Run: `sbt run`
-  - Package: `sbt universal:packageBin` (zip) **or** `sbt universal:packageZipTarball` (tar)
+    - Run: `sbt run`
+    - Package: `sbt universal:packageBin` (zip) **or** `sbt universal:packageZipTarball` (tar)
 
 
 API docs
