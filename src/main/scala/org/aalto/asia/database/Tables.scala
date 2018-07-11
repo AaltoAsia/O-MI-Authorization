@@ -1,32 +1,18 @@
 package org.aalto.asia.database
 
-import java.util.Date
-import java.sql.Timestamp
-
-import scala.util.{ Try, Success, Failure }
-
-import akka.event.{ LoggingAdapter, Logging }
+import akka.event.{ LoggingAdapter }
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
-import scala.collection.mutable.{ Map => MutableMap, HashMap => MutableHashMap }
-import scala.collection.immutable.BitSet.BitSet1
 import scala.language.postfixOps
 
-import org.slf4j.LoggerFactory
 //import slick.driver.H2Driver.api._
-import slick.jdbc.meta.MTable
 
-import slick.backend.DatabaseConfig
-//import slick.driver.H2Driver.api._
-import slick.driver.JdbcProfile
-import slick.lifted.{ Index, ForeignKeyQuery, ProvenShape }
+import slick.basic.DatabaseConfig
+//import slick.driver.h2driver.api._
+import slick.jdbc.JdbcProfile
 import org.aalto.asia.types.Path
 import org.aalto.asia.requests._
 
-import Request._
-
-case class RuleEntry(
+case class PermissionEntry(
   val groupId: Long,
   val request: String,
   val allow: Boolean,
@@ -52,14 +38,14 @@ case class SubGroupEntry(
 
 trait DBBase {
   val dc: DatabaseConfig[JdbcProfile] //= DatabaseConfig.forConfig[JdbcProfile](database.dbConfigName)
-  import dc.driver.api._
+  import dc.profile.api._
   val db: Database
   //protected[this] val db: Database
 }
 
 trait AuthorizationTables extends DBBase {
-  import dc.driver.api._
-  import dc.driver.api.DBIOAction
+  import dc.profile.api._
+  import dc.profile.api.DBIOAction
 
   def log: LoggingAdapter
   type DBSIOro[Result] = DBIOAction[Seq[Result], Streaming[Result], Effect.Read]
@@ -103,13 +89,14 @@ trait AuthorizationTables extends DBBase {
     def userId: Rep[Long] = column[Long]("USER_ID")
     def userIndex = index("MEMBERS_USER_INDEX", userId, unique = false)
     def groupIndex = index("MEMBERS_GROUP_INDEX", groupId, unique = false)
-    def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-    def usersFK = foreignKey("USER_FK", userId, usersTable)(_.userId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def groupsFK = foreignKey("MEMBERS_GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def usersFK = foreignKey("MEMBERS_USER_FK", userId, usersTable)(_.userId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
     def * = (groupId, userId) <> (MemberEntry.tupled, MemberEntry.unapply)
   }
   class Members extends TableQuery[MembersTable](new MembersTable(_))
   val membersTable = new Members()
 
+  /*
   class SubGroupsTable(tag: Tag) extends Table[SubGroupEntry](tag, "SUBGROUPS") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID")
     def subGroupId: Rep[Long] = column[Long]("SUB_GROUP_ID")
@@ -121,8 +108,9 @@ trait AuthorizationTables extends DBBase {
   }
   class SubGroups extends TableQuery[SubGroupsTable](new SubGroupsTable(_))
   val subGroupsTable = new SubGroups()
+  */
 
-  class RulesTable(tag: Tag) extends Table[RuleEntry](tag, "RULES") {
+  class PermissionsTable(tag: Tag) extends Table[PermissionEntry](tag, "RULES") {
     def groupId: Rep[Long] = column[Long]("GROUP_ID")
     def request: Rep[String] = column[String]("REQUEST")
     def path: Rep[Path] = column[Path]("PATH")
@@ -131,19 +119,21 @@ trait AuthorizationTables extends DBBase {
     def groupIndex = index("RULES_GROUP_INDEX", groupId, unique = false)
     def groupRequestIndex = index("RULES_GROUP_REQUEST_INDEX", (groupId, request), unique = false)
 
-    def groupsFK = foreignKey("GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
-    def * = (groupId, request, allow, path) <> (RuleEntry.tupled, RuleEntry.unapply)
+    def groupsFK = foreignKey("RULES_GROUP_FK", groupId, groupsTable)(_.groupId, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
+    def * = (groupId, request, allow, path) <> (PermissionEntry.tupled, PermissionEntry.unapply)
   }
 
-  class Rules extends TableQuery[RulesTable](new RulesTable(_))
-  val rulesTable = new Rules()
+  class Permissions extends TableQuery[PermissionsTable](new PermissionsTable(_))
+  val permissionsTable = new Permissions()
 
-  def currentTimestamp: Timestamp = new Timestamp(new Date().getTime())
-  protected def queryUserRulesForRequest(username: String, request: Request) = {
+  protected def getPermissionsIOA(username: String, groups: Set[String], request: Request) = {
     val user = usersTable.filter { row => row.name === username }
-    val groups = for {
+    val knownGroups = groupsTable.filter { row => row.name.inSet(groups ++ Set("DEFAULT")) }.map { row => row.groupId }
+    val groupsInDB = for {
       (user, member) <- user join membersTable on { (user, memberEntry) => memberEntry.userId === user.userId }
     } yield (member.groupId)
+    /*
+    //Recursive subgroup getter
     def tmp(groupIds: Set[Long]): DBIOro[Set[Long]] = {
       subGroupsTable.filter {
         row => row.subGroupId inSet (groupIds)
@@ -158,27 +148,31 @@ trait AuthorizationTables extends DBBase {
             DBIO.successful(gIds)
           }
       }
-    }
-    val allGroups: DBIOro[Set[Long]] = groups.result.map(_.toSet) /*.flatMap {
+    }*/
+    val allGroups: DBIOro[Set[Long]] = groupsInDB.result.flatMap {
+      result =>
+        knownGroups.result.map {
+          kgResult =>
+            result.toSet ++ kgResult.toSet
+        }
+    } /*.flatMap {
       groupIds: Seq[Long] =>
         tmp(groupIds.toSet)
     }*/
     val action = allGroups.flatMap {
       groupIds: Set[Long] =>
         log.info(s"Found following group ids for $username: $groupIds")
-        rulesTable.filter {
+        permissionsTable.filter {
           row =>
-            row.groupId inSet (groupIds)
-        }.filter {
-          row =>
-            row.request like (s"%${request.toString}%")
+            (row.groupId inSet (groupIds)) &&
+              (row.request like (s"%${request.toString}%"))
         }.result.map {
-          rules: Seq[RuleEntry] =>
-            log.info(s"Got following rules for $username: $rules")
-            val (allows, denies) = rules.partition(_.allow)
+          permissions: Seq[PermissionEntry] =>
+            log.info(s"Got following permissions for $username: $permissions")
+            val (allows, denies) = permissions.partition(_.allow)
             val deniedPaths: Set[Path] = denies.groupBy(_.groupId).mapValues {
-              rules: Seq[RuleEntry] =>
-                rules.map(_.path).toSet
+              permissions: Seq[PermissionEntry] =>
+                permissions.map(_.path).toSet
             }.values.reduceOption[Set[Path]] {
               case (result: Set[Path], r: Set[Path]) =>
                 r.filter {
@@ -196,8 +190,8 @@ trait AuthorizationTables extends DBBase {
                 }
             }.getOrElse(Set.empty[Path])
             val allowedPaths: Set[Path] = allows.groupBy(_.groupId).mapValues {
-              rules: Seq[RuleEntry] =>
-                rules.map(_.path).toSet
+              permissions: Seq[PermissionEntry] =>
+                permissions.map(_.path).toSet
             }.values.reduceOption[Set[Path]] { _ ++ _ }
               .getOrElse(Set.empty[Path])
             PermissionResult(allowedPaths, deniedPaths)

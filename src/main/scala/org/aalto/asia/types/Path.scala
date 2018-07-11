@@ -13,11 +13,8 @@
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 package org.aalto.asia.types
-import scala.collection.JavaConversions
 import scala.util.matching.Regex
 
-import scala.concurrent.{ Future, ExecutionContext }
-import scala.util.{ Failure, Success, Try }
 /**
  * Path is a wrapper for Seq[String] representing path to an O-DF Object
  * It abstracts path seperators ('/') from error prone actions such as joining

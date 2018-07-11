@@ -1,30 +1,19 @@
 package org.aalto.asia.database
 
-import java.util.Date
-import java.sql.Timestamp
-
-import scala.util.{ Try, Success, Failure }
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import akka.event.Logging
 import scala.concurrent.{ Await, Future }
-import scala.collection.mutable.{ Map => MutableMap, HashMap => MutableHashMap }
-import scala.collection.immutable.BitSet.BitSet1
-import scala.language.postfixOps
 
 import akka.actor.ActorSystem
 
-import org.slf4j.LoggerFactory
 //import slick.driver.H2Driver.api._
 import slick.jdbc.meta.MTable
 
-import slick.backend.DatabaseConfig
+import slick.basic.DatabaseConfig
 //import slick.driver.H2Driver.api._
-import slick.driver.JdbcProfile
-import slick.lifted.{ Index, ForeignKeyQuery, ProvenShape }
+import slick.jdbc.JdbcProfile
 import org.aalto.asia.types.Path
-import org.aalto.asia.AuthConfigSettings
 import org.aalto.asia.requests._
 
 class AuthorizationDB(
@@ -32,8 +21,7 @@ class AuthorizationDB(
   val system: ActorSystem) extends AuthorizationTables {
 
   val dc: DatabaseConfig[JdbcProfile] = DatabaseConfig.forConfig[JdbcProfile](database.dbConfigName)
-  import dc.driver.api._
-  import dc.driver.api.DBIOAction
+  import dc.profile.api._
   val db: Database = dc.db
   lazy val log = Logging(system, classOf[AuthorizationDB])
 
@@ -56,17 +44,19 @@ class AuthorizationDB(
           case "USERS" => usersTable.schema.create
           case "GROUPS" => groupsTable.schema.create
           case "MEMBERS" => membersTable.schema.create
-          case "RULES" => rulesTable.schema.create
+          case "RULES" => permissionsTable.schema.create
         }
         DBIO.sequence(tableCreations.toSeq)
     }.flatMap {
       res =>
-        groupsTable.filter(group => group.name inSet (expectedGroups)).result.flatMap {
-          foundGroups: Seq[GroupEntry] =>
+        groupsTable.filter(group => group.name inSet (expectedGroups)).map(_.name).result.flatMap {
+          foundGroups: Seq[String] =>
+            log.info(s"Found following groups: " + foundGroups.mkString(", "))
             val entries = expectedGroups.filter(!foundGroups.contains(_)).map {
               groupName => GroupEntry(None, groupName)
             }
             if (entries.nonEmpty) {
+              log.info(entries.toString)
               groupsTable ++= entries
             } else {
               DBIO.successful(foundGroups.toSet)
@@ -75,6 +65,7 @@ class AuthorizationDB(
     }
     val future = db.run(actions).flatMap {
       _ =>
+        log.info(s"DBIOActions complete, checking existing tables.")
         db.run(
           currentTableNames.map {
             tableNames: Seq[String] =>
@@ -84,11 +75,12 @@ class AuthorizationDB(
               if (notCreated.nonEmpty)
                 log.error(s"Could not create following tables: $notCreated")
               else log.info(s"DB successfully initialised")
-          }).flatMap(_ => logGroups)
+          }) //.flatMap(_ => logGroups)
     }
-    future.onFailure {
+    future.failed.foreach {
       case t: Exception =>
         log.error(t.getMessage)
+        throw t
     }
     Await.ready(future, 1.minutes)
   }
@@ -108,18 +100,47 @@ class AuthorizationDB(
         log.info(s"Found following members from DB:\n${members.mkString("\n")}")
     })
   }
-  def logRules: Future[Unit] = {
-    db.run(rulesTable.result.map {
-      rules =>
-        log.info(s"Found following rules from DB:\n${rules.mkString("\n")}")
+  def logPermissions: Future[Unit] = {
+    db.run(permissionsTable.result.map {
+      permissions =>
+        log.info(s"Found following permissions from DB:\n${permissions.mkString("\n")}")
     })
   }
-  def userRulesForRequest(username: String, request: Request): Future[PermissionResult] = {
-    logGroups.flatMap(_ =>
-      logMembers.flatMap(_ =>
-        logRules.flatMap(
-          _ =>
-            db.run(queryUserRulesForRequest(username, request)))))
+  def getPermissions(username: String, groups: Set[String], request: Request): Future[PermissionResult] = {
+    db.run(getPermissionsIOA(username, groups, request))
+  }
+  def getUsers(group: Option[String]): Future[Set[String]] = {
+    group.map {
+      groupname =>
+        getMembers(groupname)
+    }.getOrElse {
+      db.run(usersTable.map(_.name).result.map(_.toSet))
+    }
+  }
+  def getGroups(user: Option[String]): Future[Set[String]] = {
+    user.map {
+      username =>
+        val uid = usersTable.filter(_.name === username).map(_.userId)
+        val groupIds = for {
+          (gId, me) <- uid join membersTable on ((id, me) => id === me.userId)
+        } yield (me.groupId)
+        val groups = for {
+          (gId, group) <- groupIds join groupsTable on ((id, ge) => id === ge.groupId)
+        } yield (group.name)
+        db.run(groups.result.map(_.toSet))
+    }.getOrElse {
+      db.run(groupsTable.map(_.name).result.map(_.toSet))
+    }
+  }
+  def getMembers(groupname: String): Future[Set[String]] = {
+    val groupIds = groupsTable.filter(_.name === groupname).map(_.groupId)
+    val memberIds = for {
+      (gId, me) <- groupIds join membersTable on ((gId, me) => gId === me.groupId)
+    } yield (me.userId)
+    val users = for {
+      (mId, ue) <- memberIds join usersTable on ((mId, ue) => mId === ue.userId)
+    } yield (ue.name)
+    db.run(users.result.map(_.toSet))
   }
 
   def newUser(username: String): Future[Unit] = {
@@ -193,6 +214,7 @@ class AuthorizationDB(
     }
     db.run(action).map(_ => Unit)
   }
+  /*
   def newSubGroup(subgroup: String, group: String) = {
     val ids = for {
       sgroup <- groupsTable.filter { row => row.name === subgroup }
@@ -223,16 +245,16 @@ class AuthorizationDB(
         DBIO.sequence(removes)
     }
     db.run(action).map(_ => Unit)
-  }
-  def removeRules(groupname: String, rules: Seq[RRule]): Future[Unit] = {
+  }*/
+  def removePermissions(groupname: String, permissions: Seq[RPermission]): Future[Unit] = {
     val action = groupsTable.filter { row => row.name === groupname }.map(_.groupId).result.flatMap {
       groupIds: Seq[Long] =>
         groupIds.headOption match {
           case Some(groupId) =>
-            DBIO.sequence(rules.map {
-              case RRule(path, allow) =>
-                rulesTable.filter {
-                  rule => rule.groupId === groupId && rule.path === path && rule.allow === allow
+            DBIO.sequence(permissions.map {
+              case RPermission(path, allow) =>
+                permissionsTable.filter {
+                  permission => permission.groupId === groupId && permission.path === path && permission.allow === allow
                 }.delete
             }.toSeq)
           case None =>
@@ -242,24 +264,24 @@ class AuthorizationDB(
     db.run(action).map { _ => Unit }
   }
 
-  def setRulesForPaths(groupname: String, pathRules: Seq[Rule]): Future[Unit] = {
+  def setPermissionsForPaths(groupname: String, pathPermissions: Seq[Permission]): Future[Unit] = {
     val action = groupsTable.filter { row => row.name === groupname }.map(_.groupId).result.flatMap {
       groupIds: Seq[Long] =>
         groupIds.headOption match {
           case Some(groupId) =>
-            val insertOrUpdates = pathRules.map {
-              case Rule(path: Path, request: Request, allow: Boolean) =>
-                val existsQ = rulesTable.filter {
+            val insertOrUpdates = pathPermissions.map {
+              case Permission(path: Path, request: Request, allow: Boolean) =>
+                val existsQ = permissionsTable.filter {
                   row =>
                     row.path === path &&
                       row.groupId === groupId &&
                       row.allow === allow
                 }
                 existsQ.result.flatMap {
-                  rules =>
-                    rules.headOption match {
-                      case None => { rulesTable += RuleEntry(groupId, request.toString, allow, path) }
-                      case Some(rule) => { existsQ.map(_.request).update(request.toString) }
+                  permissions =>
+                    permissions.headOption match {
+                      case None => { permissionsTable += PermissionEntry(groupId, request.toString, allow, path) }
+                      case Some(permission) => { existsQ.map(_.request).update(request.toString) }
                     }
                 }
 

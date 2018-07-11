@@ -1,21 +1,16 @@
 package org.aalto.asia
 
-import akka.actor.{ ActorRef, ActorSystem }
-import akka.event.{ LoggingAdapter, Logging }
+import akka.actor.{ ActorSystem }
+import akka.event.{ Logging }
 
-import scala.util.control.NonFatal
 import scala.concurrent.duration._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.directives.MethodDirectives.delete
 import akka.http.scaladsl.server.directives.MethodDirectives.get
 import akka.http.scaladsl.server.directives.MethodDirectives.post
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.http.scaladsl.server.directives.PathDirectives.path
 
 import scala.concurrent.Future
-import akka.pattern.ask
 import akka.util.Timeout
 import database._
 import org.aalto.asia.requests._
@@ -35,8 +30,8 @@ trait AuthRoutes extends JsonSupport {
     post {
       path("get-permissions") {
         entity(as[GetPermissions]) { pr =>
-          val permissions: Future[PermissionResult] = authDB.userRulesForRequest(pr.username, pr.request)
-          permissions.onFailure {
+          val permissions: Future[PermissionResult] = authDB.getPermissions(pr.username, pr.groups, pr.request)
+          permissions.failed.foreach {
             case t: Throwable =>
               log.error(t.getMessage)
           }
@@ -69,18 +64,45 @@ trait AuthRoutes extends JsonSupport {
         }
       } ~ path("leave-groups") {
         entity(as[LeaveGroups]) { ar: LeaveGroups =>
-          val result: Future[Unit] = authDB.joinGroups(ar.username, ar.groups)
+          val result: Future[Unit] = authDB.leaveGroups(ar.username, ar.groups)
           complete(result)
         }
-      } ~ path("set-rules") {
-        entity(as[SetRules]) { ar: SetRules =>
-          val result: Future[Unit] = authDB.setRulesForPaths(ar.group, ar.rules)
+      } ~ path("set-permissions") {
+        entity(as[SetPermissions]) { ar: SetPermissions =>
+          val result: Future[Unit] = authDB.setPermissionsForPaths(ar.group, ar.permissions)
           complete(result)
         }
-      } ~ path("remove-rules") {
-        entity(as[RemoveRules]) { ar: RemoveRules =>
-          val result: Future[Unit] = authDB.removeRules(ar.group, ar.rules)
+      } ~ path("remove-permissions") {
+        entity(as[RemovePermissions]) { ar: RemovePermissions =>
+          val result: Future[Unit] = authDB.removePermissions(ar.group, ar.permissions)
           complete(result)
+        }
+      } ~ path("get-members") {
+        entity(as[GetMembers]) { gm: GetMembers =>
+          complete(authDB.getMembers(gm.groupname))
+        }
+      } ~ path("get-groups") {
+        entity(as[GetGroups]) { gg: GetGroups =>
+          complete(authDB.getGroups(gg.username))
+        } ~ complete(authDB.getGroups(None))
+      } ~ path("get-users") {
+        entity(as[GetUsers]) { gu: GetUsers =>
+          complete(authDB.getUsers(gu.groupname))
+        } ~ complete(authDB.getUsers(None))
+      }
+
+    } ~ get {
+      path("get-users") {
+        parameters("groupname".?) { (groupname: Option[String]) =>
+          complete(authDB.getUsers(groupname))
+        }
+      } ~ path("get-groups") {
+        parameters("username".?) { (username: Option[String]) =>
+          complete(authDB.getGroups(username))
+        }
+      } ~ path("get-members") {
+        parameters("groupname") { (groupname: String) =>
+          complete(authDB.getMembers(groupname))
         }
       }
     }

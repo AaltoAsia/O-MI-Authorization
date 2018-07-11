@@ -1,0 +1,137 @@
+package org.aalto.asia
+
+//#user-routes-spec
+//#test-top
+import akka.actor.ActorRef
+import akka.http.scaladsl.marshalling.Marshal
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.testkit.Specs2RouteTest
+import org.specs2._
+import org.specs2.matcher._
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.{ write, read }
+
+import database._
+import requests._
+
+class AuthRoutesSpec extends mutable.Specification with Specs2RouteTest
+  with AuthRoutes {
+  sequential
+
+  val authDB = new AuthorizationDB()
+  "AuthRoutes " should {
+    sequential
+    "at start " in {
+      "return no users" in {
+        "(GET /get-users)" in {
+          // note that there's no need for the host part in the uri:
+          val request = Get("/v1/get-users")
+
+          request ~> routes ~> check {
+            status shouldEqual (StatusCodes.OK)
+
+            // we expect the response to be json:
+            contentType shouldEqual (ContentTypes.`application/json`)
+
+            // and no entries should be in the list:
+            entityAs[Set[String]] must be empty
+          }
+        }
+        "(POST /get-users)" in {
+          // note that there's no need for the host part in the uri:
+          val request = Post("/v1/get-users")
+
+          request ~> routes ~> check {
+            status shouldEqual (StatusCodes.OK)
+
+            // we expect the response to be json:
+            contentType shouldEqual (ContentTypes.`application/json`)
+
+            // and no entries should be in the list:
+            entityAs[Set[String]] must be empty
+          }
+        }
+      }
+      "return only initial groups" in {
+        "(GET /get-groups)" in {
+          // note that there's no need for the host part in the uri:
+          val request = Get("/v1/get-groups")
+
+          request ~> routes ~> check {
+            status shouldEqual (StatusCodes.OK)
+
+            // we expect the response to be json:
+            contentType shouldEqual (ContentTypes.`application/json`)
+
+            // and no entries should be in the list:
+            entityAs[Set[String]] shouldEqual (Set("DEFAULT", "ADMIN"))
+
+          }
+        }
+        "(POST /get-groups)" in {
+          // note that there's no need for the host part in the uri:
+          val request = Post("/v1/get-groups")
+
+          request ~> routes ~> check {
+            status shouldEqual (StatusCodes.OK)
+
+            // we expect the response to be json:
+            contentType shouldEqual (ContentTypes.`application/json`)
+
+            // and no entries should be in the list:
+            entityAs[Set[String]] shouldEqual (Set("DEFAULT", "ADMIN"))
+
+          }
+        }
+      }
+    }
+    val username = "tester"
+    s"adding new user $username should" in {
+      "return OK with correct json" in {
+        Post(
+          "/v1/add-user",
+          HttpEntity(ContentTypes.`application/json`, write(AddUser(username)))) ~> routes ~> check {
+            status shouldEqual (StatusCodes.OK)
+          }
+      }
+
+      "make user shown when requesting all users" in {
+        Post("/v1/get-users") ~> routes ~> check {
+          status shouldEqual (StatusCodes.OK)
+
+          // we expect the response to be json:
+          contentType shouldEqual (ContentTypes.`application/json`)
+
+          // and no entries should be in the list:
+          entityAs[Set[String]] must contain(username)
+        }
+      }
+      s"create ${username}_USERGROUP group" in {
+        Post("/v1/get-groups") ~> routes ~> check {
+          status shouldEqual (StatusCodes.OK)
+
+          // we expect the response to be json:
+          contentType shouldEqual (ContentTypes.`application/json`)
+
+          // and no entries should be in the list:
+          entityAs[Set[String]] must contain(s"${username}_USERGROUP")
+        }
+      }
+      s"join it to DEFAULT and ${username}_USERGROUP automaticly" in {
+        Post(
+          "/v1/get-groups",
+          HttpEntity(ContentTypes.`application/json`, write(GetGroups(Some(username))))) ~> routes ~> check {
+            status shouldEqual (StatusCodes.OK)
+
+            // we expect the response to be json:
+            contentType shouldEqual (ContentTypes.`application/json`)
+
+            // and no entries should be in the list:
+            entityAs[Set[String]] must contain(s"${username}_USERGROUP", "DEFAULT")
+          }
+      }
+    }
+  }
+}

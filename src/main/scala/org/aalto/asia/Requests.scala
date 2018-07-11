@@ -1,7 +1,5 @@
 package org.aalto.asia.requests
 
-import java.sql.Timestamp
-
 import org.aalto.asia.types.Path
 object RequestType extends Enumeration {
 
@@ -63,28 +61,31 @@ case class ReadWriteCallDelete() extends Request {
 import RequestType._
 case class GetPermissions(
   val username: String,
-  val request: Request //Read,Call,Write,Delete
-)
+  val request: Request, //Read,Call,Write,Delete
+  val groups: Set[String])
 
 case class PermissionResult(
   allowed: Set[Path],
   denied: Set[Path])
 
-case class Rule(path: Path, request: Request, allow: Boolean)
-case class SetRules(
+case class Permission(path: Path, request: Request, allow: Boolean)
+case class SetPermissions(
   val group: String,
-  val rules: Seq[Rule])
-case class RRule(path: Path, allow: Boolean)
-case class RemoveRules(
+  val permissions: Seq[Permission])
+case class RPermission(path: Path, allow: Boolean)
+case class RemovePermissions(
   val group: String,
-  val rules: Seq[RRule])
+  val permissions: Seq[RPermission])
 
 case class AddUser(val username: String)
 case class RemoveUser(val username: String)
+case class GetUsers(val groupname: Option[String])
 
 case class AddGroup(val groupname: String)
 case class RemoveGroup(val groupname: String)
+case class GetGroups(val username: Option[String])
 
+case class GetMembers(val groupname: String)
 case class JoinGroups(val username: String, val groups: Set[String])
 case class LeaveGroups(val username: String, val groups: Set[String])
 
