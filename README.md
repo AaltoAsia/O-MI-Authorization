@@ -4,6 +4,22 @@ O-MI Authorization Service
 Standalone server that implements O-MI Node reference implementation authorization protocol v2.
 This service needs one form of authentication that should be configured in some other service.
 
+Features
+-------
+
+- Model: `Permissions <-> Role/Group <-> Consumer`
+    * (Consumer can belong to many groups, groups can have many permission rules)
+    * Permissions can be set to O-MI write, read, delete and call requests separately
+    * Allow and deny permissions can be set to any O-DF path to affect it and its children nodes.
+    * Deny permissions overrides allow permissions (also on the children nodes of allow rules)
+    * Permission calculation in set operations:
+        1. Combine groups: `<allow-a> union <allow-b>, <deny-a> intersect <deny-b>`
+        2. In O-MI Node: `<request-O-DF> intersect <allow> difference <deny>`
+- `DEFAULT` group to set default permissions for all users (and those without user account if allowed by O-MI Node/authentication service)
+- JSON REST API
+- Configurable SQL database
+
+
 
 Configuration
 --------------
@@ -35,15 +51,28 @@ omi-service.authAPI.v2 {
         # jsonproperty = variableName
         username = "username"
         request = "requestTypeChar"
+        # Uncomment to include additional groups/roles for the user (for this request only) from "roles" variable
+        #groups = "roles"
       }
     }
 
-  }
+    ## Uncomment these to make read requests to work without user (logging in) and get default permissions from authorization module:
+    ## we can skip authentication (othewise it will fail which will result in unauthorized error)
+    #parameters.skipAuthenticationOnEmpty = ["token"]
+    ## and send empty username to authorization (authorization module supports sending of default permissions for empty username)
+    #parameters.initial {
+    #  username = "" # to send empty username if username is not given by authentication
+    #}
+}
 ```
 
 ### Authorization module
 
-See configuration file `application.conf`.
+See configuration file `application.conf`:
+
+- in release package: `conf/application.conf`
+- in development (create if missing): `src/main/resources/application.conf`
+- [defaults](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/src/main/resources/reference.conf)
 
 
 Compiling
@@ -55,86 +84,17 @@ Compiling
   - Run: `sbt run`
   - Package: `sbt universal:packageBin` (zip) **or** `sbt universal:packageZipTarball` (tar)
 
-Known issues
-------------
-
 
 API docs
 -------
 
 * [Html API docs](http://aaltoasia.github.io/O-MI-Authorization/)
 * [swagger.yaml](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/swagger.yaml)
+* [Example commandline usage](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/apiExamples.md)
 
 Debugging
 ----------
 
-Uncomment all loggers in logback.xml, which is in directory `src/main/resources/` in dev version and in `conf/` in releases.
-
-Example usage
--------------
-
-Examples with [httpie](https://httpie.org/doc) program
-
-### Adding users and groups
-
-`http POST :8001/v1/add-user username=Tester1`
-
-`http POST :8001/v1/add-group groupname=Testers`
-
-### Joining and leaving groups
-
-`http POST :8001/v1/join-groups username=Tester1 groups:='["Testers"]'`
-
-`http POST :8001/v1/leave-groups username=Tester1 groups:='["Testers"]'`
-
-### Setting and removing permissions 
-
-`http POST :8001/v1/set-permissions group=Testers permissions:='[{"path":"Objects","request":"r","allow":true},{"path":"Objects","request":"wcd","allow":false}]'`
-
-`http POST :8001/v1/remove-permissions group=Testers permissions:='[{"path":"Objects","allow":true}]'` 
-
-### Getting permissions for request and user
-
-`http POST :8001/v1/get-permissions username=Tester1 request=r`
-
-Can also include groups known by authentication
-
-`http POST :8001/v1/get-permissions username=Tester1 request=r groups:='["Testers"]'`
-
-### Removing groups and user
-
-`http POST :8001/v1/remove-group groupname=Testers`
-
-`http POST :8001/v1/remove-user username=Tester1`
-
-### Get all users
-
-`http GET :8001/v1/get-users`
-
-`http POST :8001/v1/get-users`
-
-### Get users in group
-
-`http GET :8001/v1/get-users groupname==Testers`
-
-`http POST :8001/v1/get-users groupname=Testers`
-
-Alternative path
-
-`http POST :8001/v1/get-members groupname=Testers`
-
-`http GET :8001/v1/get-members groupname==Testers`
-
-### Get all groups
-
-`http GET :8001/v1/get-groups`
-
-`http POST :8001/v1/get-groups`
-
-### Get all groups with given user as member
-
-`http GET :8001/v1/get-groups username=Tester`
-
-`http POST :8001/v1/get-groups username=Tester`
+Uncomment all loggers in `logback.xml`, which is in directory `src/main/resources/` in dev version and in `conf/` in releases.
 
 
