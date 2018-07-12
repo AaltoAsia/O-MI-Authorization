@@ -1,13 +1,10 @@
 import Dependencies._
 lazy val root = (project in file(".")).
   settings(
-    inThisBuild(List(
-      version         := "1.0.0",
-      organization    := "org.aalto.asia",
-      scalaVersion    := "2.12.6"
-    )),
-    name := "O-MI Authorization",
-    version := "1.0.0",
+    version         := "1.0.0",
+    organization    := "org.aalto.asia",
+    scalaVersion    := "2.12.6" ,
+    name            := "O-MI-Authorization",
     libraryDependencies ++= akka_dependencies,
     libraryDependencies ++= akka_test_dependencies,
     libraryDependencies ++= scala_test_dependencies,
@@ -35,7 +32,7 @@ lazy val root = (project in file(".")).
         base / "README.md" -> "README.md")
     }
   )
-enablePlugins(JavaServerAppPackaging)
+enablePlugins(JavaServerAppPackaging, SystemdPlugin)
 enablePlugins(UniversalPlugin)
 enablePlugins(LinuxPlugin)
 
