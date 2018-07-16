@@ -75,6 +75,13 @@ See configuration file `application.conf`:
 - in development (create if missing): `src/main/resources/application.conf`
 - [defaults](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/src/main/resources/reference.conf)
 
+Running
+------------
+
+1. [Download release](https://github.com/AaltoAsia/O-MI-Authorization/releases/latest)
+2. Run startup script
+   * Linux/Mac: `./bin/o-mi-authorization`
+   * Windows: `./bin/o-mi-authorization.bat`
 
 Compiling
 ----------
