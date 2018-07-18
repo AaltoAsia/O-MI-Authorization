@@ -15,9 +15,9 @@ object QuickstartServer extends App with AuthRoutes with JsonSupport {
   implicit val system: ActorSystem = ActorSystem("O-MI-Authorization-Server")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val authDB = new AuthorizationDB()
+  implicit val settings = Settings(system)
+  import settings._
 
-  val interface = "localhost"
-  val port = 8001
   Http().bindAndHandle(routes, interface, port)
   println(s"Server online at http://$interface:$port/")
 
