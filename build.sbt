@@ -1,4 +1,6 @@
 import Dependencies._
+import com.typesafe.sbt.packager.linux.LinuxSymlink
+
 lazy val root = (project in file(".")).
   settings(
     version         := "1.0.0",
@@ -31,9 +33,27 @@ lazy val root = (project in file(".")).
       val base = baseDirectory.value
       Seq(
         base / "README.md" -> "README.md")
+    },
+    linuxPackageMappings in Debian ++= Seq(
+        packageTemplateMapping(
+          s"/var/lib/${normalizedName.value}/"
+        )() withUser( daemonUser.value ) withGroup( daemonGroup.value ),
+        packageTemplateMapping(
+          s"/var/lib/${normalizedName.value}/database"
+        )() withUser( daemonUser.value ) withGroup( daemonGroup.value )
+      ),
+    linuxPackageSymlinks in Debian +={
+      LinuxSymlink( s"/usr/share/${normalizedName.value}/database", s"/var/lib/${normalizedName.value}/database")
+    },
+    linuxPackageMappings in Rpm +={
+        packageTemplateMapping(
+          s"/usr/share/${normalizedName.value}/database"
+        )() withUser( daemonUser.value ) withGroup( daemonGroup.value )
     }
   )
 enablePlugins(JavaServerAppPackaging, SystemdPlugin)
 enablePlugins(UniversalPlugin)
 enablePlugins(LinuxPlugin)
+enablePlugins(DebianPlugin)
+enablePlugins(RpmPlugin)
 
