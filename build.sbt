@@ -34,7 +34,15 @@ lazy val root = (project in file(".")).
       Seq(
         base / "README.md" -> "README.md")
     },
-    linuxPackageMappings in Debian ++= Seq(
+    mappings in (Universal,packageZipTarball) ++= {
+      val base = baseDirectory.value
+      Seq( base -> "database/")
+    },
+    mappings in (Universal,packageBin) ++= {
+      val base = baseDirectory.value
+      Seq( base  -> "database/")
+    },
+    linuxPackageMappings ++= Seq(
         packageTemplateMapping(
           s"/var/lib/${normalizedName.value}/"
         )() withUser( daemonUser.value ) withGroup( daemonGroup.value ),
@@ -42,14 +50,10 @@ lazy val root = (project in file(".")).
           s"/var/lib/${normalizedName.value}/database"
         )() withUser( daemonUser.value ) withGroup( daemonGroup.value )
       ),
-    linuxPackageSymlinks in Debian +={
+    linuxPackageSymlinks +={
       LinuxSymlink( s"/usr/share/${normalizedName.value}/database", s"/var/lib/${normalizedName.value}/database")
-    },
-    linuxPackageMappings in Rpm +={
-        packageTemplateMapping(
-          s"/usr/share/${normalizedName.value}/database"
-        )() withUser( daemonUser.value ) withGroup( daemonGroup.value )
     }
+
   )
 enablePlugins(JavaServerAppPackaging, SystemdPlugin)
 enablePlugins(UniversalPlugin)
