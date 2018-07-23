@@ -5,6 +5,7 @@ lazy val root = (project in file(".")).
     organization    := "org.aalto.asia",
     scalaVersion    := "2.12.6" ,
     name            := "O-MI-Authorization",
+    maintainer := "Tuomas Kinnunen <tuomas.kinnunen@aalto.fi>; Lauri Isojärvi <lauri.isojarvi@aalto.fi>",
     libraryDependencies ++= akka_dependencies,
     libraryDependencies ++= akka_test_dependencies,
     libraryDependencies ++= scala_test_dependencies,
