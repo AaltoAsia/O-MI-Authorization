@@ -105,4 +105,8 @@ Debugging
 
 Uncomment all loggers in `logback.xml`, which is in directory `src/main/resources/` in dev version and in `conf/` in releases.
 
+Acknowledgements
+---------------
+
+Sections of this project has been developed as part of the [bIoTope Project](www.bIoTope-project.eu), which has received funding from the European Union’s Horizon 2020 Research and Innovation Programme under grant agreement No. 688203.
 
