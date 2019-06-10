@@ -75,6 +75,13 @@ See configuration file `application.conf`:
 - in development (create if missing): `src/main/resources/application.conf`
 - [defaults](https://github.com/AaltoAsia/O-MI-Authorization/blob/master/src/main/resources/reference.conf)
 
+Running
+------------
+
+1. [Download release](https://github.com/AaltoAsia/O-MI-Authorization/releases/latest)
+2. Run startup script
+   * Linux/Mac: `./bin/o-mi-authorization`
+   * Windows: `./bin/o-mi-authorization.bat`
 
 Compiling
 ----------
@@ -98,4 +105,8 @@ Debugging
 
 Uncomment all loggers in `logback.xml`, which is in directory `src/main/resources/` in dev version and in `conf/` in releases.
 
+Acknowledgements
+---------------
+
+Sections of this project has been developed as part of the [bIoTope Project](www.bIoTope-project.eu), which has received funding from the European Union’s Horizon 2020 Research and Innovation Programme under grant agreement No. 688203.
 

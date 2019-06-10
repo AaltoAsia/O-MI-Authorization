@@ -1,10 +1,13 @@
 import Dependencies._
+import com.typesafe.sbt.packager.linux.LinuxSymlink
+
 lazy val root = (project in file(".")).
   settings(
     version         := "1.0.0",
     organization    := "org.aalto.asia",
     scalaVersion    := "2.12.6" ,
     name            := "O-MI-Authorization",
+    maintainer := "Tuomas Kinnunen <tuomas.kinnunen@aalto.fi>; Lauri Isojärvi <lauri.isojarvi@aalto.fi>",
     libraryDependencies ++= akka_dependencies,
     libraryDependencies ++= akka_test_dependencies,
     libraryDependencies ++= scala_test_dependencies,
@@ -30,9 +33,31 @@ lazy val root = (project in file(".")).
       val base = baseDirectory.value
       Seq(
         base / "README.md" -> "README.md")
+    },
+    mappings in (Universal,packageZipTarball) ++= {
+      val base = baseDirectory.value
+      Seq( base -> "database/")
+    },
+    mappings in (Universal,packageBin) ++= {
+      val base = baseDirectory.value
+      Seq( base  -> "database/")
+    },
+    linuxPackageMappings ++= Seq(
+        packageTemplateMapping(
+          s"/var/lib/${normalizedName.value}/"
+        )() withUser( daemonUser.value ) withGroup( daemonGroup.value ),
+        packageTemplateMapping(
+          s"/var/lib/${normalizedName.value}/database"
+        )() withUser( daemonUser.value ) withGroup( daemonGroup.value )
+      ),
+    linuxPackageSymlinks +={
+      LinuxSymlink( s"/usr/share/${normalizedName.value}/database", s"/var/lib/${normalizedName.value}/database")
     }
+
   )
 enablePlugins(JavaServerAppPackaging, SystemdPlugin)
 enablePlugins(UniversalPlugin)
 enablePlugins(LinuxPlugin)
+enablePlugins(DebianPlugin)
+enablePlugins(RpmPlugin)
 
