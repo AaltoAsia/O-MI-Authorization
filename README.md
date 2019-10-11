@@ -13,9 +13,9 @@ Features
     * Allow and deny permissions can be set to any O-DF path to affect it and its children nodes.
     * Deny permissions overrides allow permissions (also on the children nodes of allow rules)
     * Permission calculation in set operations:
-        1. Combine groups: `<allow-a> union <allow-b>, <deny-a> intersect <deny-b>`
+        1. Combine groups: `<allow-a> union <allow-b>, <deny-a> intersect <deny-b>` (exception: a intersect {} = a)
         2. In O-MI Node: `<request-O-DF> intersect <allow> difference <deny>`
-- Automatic `DEFAULT` group to set default permissions for all users (and those without user account if allowed by O-MI Node/authentication service). By default it has no permissions.
+- Automatic `DEFAULT` group to set default permissions for all users (and those without user account if allowed by O-MI Node/authentication service). By default it has no permissions. Also note that in order to intersect deny permissions in `DEFAULT`, some other group needs to have some different deny permissions instead of an empty set. You can create a deny permission to a non-existing path to achieve "admin" rights.
 - Automatic `<username>_USERGROUP` group for each user to easily set permissions to single user. By default it has no permissions.
 - JSON REST API
 - Configurable SQL database
